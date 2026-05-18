@@ -1,40 +1,96 @@
-name: 한국 증시 AI 분석 (매일 오전 6시 KST)
-
-on:
-  schedule:
-    # KST 06:00 = UTC 21:00 (전날)
-    - cron: '0 21 * * *'
-  workflow_dispatch:  # 수동 실행 버튼도 활성화
-
-permissions:
-  contents: write
-  pages: write
-  id-token: write
-
-jobs:
-  analyze:
-    runs-on: ubuntu-latest
-    steps:
-      - name: 코드 체크아웃
-        uses: actions/checkout@v4
-
-      - name: Python 설치
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: 패키지 설치
-        run: pip install requests
-
-      - name: 한국 증시 분석 실행
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: python scripts/analyze.py
-
-      - name: 결과 커밋 & 푸시
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "KRMarketAI Bot"
-          git add docs/
-          git diff --staged --quiet || git commit -m "📊 증시 분석 업데이트: $(TZ=Asia/Seoul date '+%Y-%m-%d %H:%M KST')"
-          git push
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KRMarketAI</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0e1a;--surface:#111827;--border:#1e2d45;--accent:#00d4ff;--up:#00e676;--down:#ff4444;--flat:#94a3b8;--text:#e2e8f0;--dim:#64748b;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;min-height:100vh;}
+header{border-bottom:1px solid var(--border);padding:24px 40px;display:flex;justify-content:space-between;align-items:center;background:rgba(17,24,39,0.9);position:sticky;top:0;z-index:100;}
+.logo{font-size:20px;font-weight:900;}.logo span{color:var(--accent);}
+.ts{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--dim);}
+.wrap{max-width:1200px;margin:0 auto;padding:40px 24px;}
+.idx{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:40px;}
+.idx-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;}
+.idx-label{font-size:12px;color:var(--dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
+.idx-val{font-family:'JetBrains Mono',monospace;font-size:36px;font-weight:700;margin-bottom:4px;}
+.idx-chg{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;}
+.up{color:var(--up);}.down{color:var(--down);}.flat{color:var(--flat);}
+.sec{font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:40px;}
+.stock-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;}
+.stock-card.up{border-left:3px solid var(--up);}.stock-card.down{border-left:3px solid var(--down);}
+.stock-name{font-size:13px;color:var(--dim);margin-bottom:6px;}
+.stock-price{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;margin-bottom:4px;}
+.stock-change{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;}
+.report{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px;line-height:1.8;}
+.report h2{font-size:20px;font-weight:700;color:var(--accent);margin:28px 0 12px;padding-top:20px;border-top:1px solid var(--border);}
+.report h3{font-size:16px;font-weight:700;margin:20px 0 8px;}
+.report li{margin-left:20px;margin-bottom:4px;color:#cbd5e1;}
+.report strong{color:#fff;}.report p{margin-bottom:12px;color:#cbd5e1;}
+.disc{margin-top:32px;padding:16px;border-radius:8px;background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.2);font-size:12px;color:var(--dim);}
+footer{text-align:center;padding:32px;font-size:12px;color:var(--dim);border-top:1px solid var(--border);margin-top:60px;}
+@media(max-width:600px){.idx{grid-template-columns:1fr;}header{padding:16px 20px;}.wrap{padding:24px 16px;}.report{padding:24px;}}
+</style>
+</head>
+<body>
+<header>
+<div class="logo">KR<span>Market</span>AI</div>
+<div class="ts">updated: 20260519 04:19 KST</div>
+</header>
+<div class="wrap">
+<div class="idx">
+<div class="idx-card">
+<div class="idx-label">KOSPI</div>
+<div class="idx-val down">7,516.04</div>
+<div class="idx-chg down">▼ 5.83%</div>
+</div>
+<div class="idx-card">
+<div class="idx-label">KOSDAQ</div>
+<div class="idx-val down">1,111.09</div>
+<div class="idx-chg down">▼ 6.72%</div>
+</div>
+</div>
+<div class="sec">주요 종목</div>
+<div class="grid"><div class="stock-card up"><div class="stock-name">Samsung</div><div class="stock-price">281,000</div><div class="stock-change up">▲ 3.88%</div></div><div class="stock-card up"><div class="stock-name">SK Hynix</div><div class="stock-price">1,840,000</div><div class="stock-change up">▲ 1.15%</div></div><div class="stock-card down"><div class="stock-name">NAVER</div><div class="stock-price">200,000</div><div class="stock-change down">▼ 1.72%</div></div><div class="stock-card down"><div class="stock-name">Kakao</div><div class="stock-price">42,450</div><div class="stock-change down">▼ 3.52%</div></div><div class="stock-card down"><div class="stock-name">Hyundai</div><div class="stock-price">663,000</div><div class="stock-change down">▼ 5.29%</div></div><div class="stock-card down"><div class="stock-name">LG Energy</div><div class="stock-price">408,000</div><div class="stock-change down">▼ 2.16%</div></div><div class="stock-card down"><div class="stock-name">Celltrion</div><div class="stock-price">183,200</div><div class="stock-change down">▼ 2.97%</div></div><div class="stock-card down"><div class="stock-name">POSCO</div><div class="stock-price">463,000</div><div class="stock-change down">▼ 0.96%</div></div><div class="stock-card down"><div class="stock-name">Kia</div><div class="stock-price">162,500</div><div class="stock-change down">▼ 3.27%</div></div><div class="stock-card down"><div class="stock-name">KB Finance</div><div class="stock-price">153,000</div><div class="stock-change down">▼ 1.67%</div></div></div>
+<div class="sec">AI 분석 리포트</div>
+<div class="report">
+<p># 한국 증시 분석 리포트 (2026년 5월 19일)</p><p><h2>1. 오늘 시장 요약</h2></p><p><strong>KOSPI</strong>는 전일 대비 -5.83% 급락한 7,516.04포인트로 마감하며 강한 조정세를 보였습니다. <strong>KOSDAQ</strong>은 더욱 가파른 -6.72% 하락한 1,111.09포인트를 기록하며 중소형주 매도세가 더욱 거셌습니다. </p><p>양대 지수 모두 5% 이상의 큰 폭 하락을 보이며 투자심리 위축이 뚜렷하게 나타났습니다. KOSPI가 52주 최고점 8,046.78 대비 약 6.6% 하락한 상황으로 단기 조정 국면에 진입했습니다.</p><p><h2>2. 주요 지표 분석</h2></p><p><h3>📈 상승 종목</h3>
+<li><strong>삼성전자</strong>: +3.88% (281,000원) - 반도체 대장주 강세</li>
+<li><strong>SK하이닉스</strong>: +1.15% (1,840,000원) - 메모리 반도체 선방</li></p><p><h3>📉 하락 종목  </h3>
+<li><strong>현대차</strong>: -5.29% (663,000원) - 완성차 업종 부진</li>
+<li><strong>카카오</strong>: -3.52% (42,450원) - 52주 최고점 71,600원 대비 40% 이상 조정</li>
+<li><strong>기아</strong>: -3.27% (162,500원) - 자동차 섹터 전반 약세</li></p><p>대부분 종목이 52주 최고점 대비 상당한 조정을 받은 상황으로, 특히 카카오와 네이버 등 IT 플랫폼 주식들의 조정폭이 큰 편입니다.</p><p><h2>3. 투자 전략</h2></p><p><h3>🐻 <strong>단기 약세 전망</strong></h3>
+현재 시장은 <strong>단기 베어리시</strong> 국면으로 판단됩니다. 양대 지수 모두 5% 이상 급락하며 투자심리가 크게 위축된 상황입니다.</p><p><h3>📊 <strong>섹터별 전략</strong></h3>
+<li><strong>반도체</strong>: 삼성전자, SK하이닉스 상대적 강세로 <strong>선택적 매수</strong> 고려</li>
+<li><strong>자동차</strong>: 현대차, 기아 등 <strong>단기 회피</strong> 권고</li>
+<li><strong>금융</strong>: KB금융 등 <strong>디펜시브 관점</strong>에서 관심</li>
+<li><strong>바이오</strong>: 셀트리온 등 <strong>저가 매수</strong> 기회 모색</li></p><p><h2>4. 추천 종목</h2></p><p><h3>🎯 <strong>1. 삼성전자 (005930)</strong></h3>
+<li><strong>진입가</strong>: 275,000원</li>
+<li><strong>목표가</strong>: 295,000원 </li>
+<li><strong>손절가</strong>: 265,000원</li>
+<li><strong>투자근거</strong>: 시장 급락 속에서도 +3.88% 상승하며 상대적 강세. 반도체 업황 회복 기대감과 안전자산 성격</li></p><p><h3>🎯 <strong>2. POSCO (005490)</strong></h3>
+<li><strong>진입가</strong>: 460,000원</li>
+<li><strong>목표가</strong>: 490,000원</li>
+<li><strong>손절가</strong>: 445,000원  </li>
+<li><strong>투자근거</strong>: -0.96% 소폭 하락으로 상대적 안정성. 철강 수요 회복과 배당 매력</li></p><p><h3>🎯 <strong>3. KB금융 (105560)</strong></h3>
+<li><strong>진입가</strong>: 150,000원</li>
+<li><strong>목표가</strong>: 165,000원</li>
+<li><strong>손절가</strong>: 145,000원</li>
+<li><strong>투자근거</strong>: 금리 상승 수혜 기대와 시장 불안 시 금융주 디펜시브 특성</li></p><p><h2>5. 회피 종목</h2></p><p><h3>⚠️ <strong>현대차 (005380)</strong></h3>
+자동차 섹터 전반의 부진과 -5.29% 급락. 52주 최고점 774,500원 대비 14% 이상 하락으로 추가 조정 우려</p><p><h3>⚠️ <strong>카카오 (035720)</strong>  </h3>
+52주 최고점 대비 40% 이상 급락한 상황. IT 플랫폼 규제 리스크와 수익성 악화 우려로 단기 반등 어려움 예상</p><p><h2>6. 내일 관전 포인트</h2></p><p><h3>🔍 <strong>주요 모니터링 사항</strong></h3>
+1. <strong>해외 증시 동향</strong> - 미국, 중국 증시 영향 점검
+2. <strong>반도체 업황</strong> - 삼성전자, SK하이닉스 추가 상승 지속성
+3. <strong>7,500선 지지</strong> - KOSPI 7,500선 방어 여부가 핵심
+4. <strong>거래량 확인</strong> - 매도 물량 소화 정도와 저가 매수세 유입
+5. <strong>환율 변동</strong> - 원/달러 환율이 수출주에 미치는 영향</p><p><strong>투자 시 리스크 관리를 철저히 하시고, 분할 매수 전략을 권고드립니다.</strong></p>
+<div class="disc">면책고지: 이 분석은 Claude AI가 생성한 참고 정보입니다. 투자 결정의 최종 책임은 투자자 본인에게 있습니다.</div>
+</div>
+</div>
+<footer>KRMarketAI · Powered by Claude AI · Data: Yahoo Finance</footer>
+</body>
+</html>
