@@ -1,0 +1,40 @@
+name: 한국 증시 AI 분석 (매일 오전 6시 KST)
+
+on:
+  schedule:
+    # KST 06:00 = UTC 21:00 (전날)
+    - cron: '0 21 * * *'
+  workflow_dispatch:  # 수동 실행 버튼도 활성화
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Python 설치
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 패키지 설치
+        run: pip install requests
+
+      - name: 한국 증시 분석 실행
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python scripts/analyze.py
+
+      - name: 결과 커밋 & 푸시
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "KRMarketAI Bot"
+          git add docs/
+          git diff --staged --quiet || git commit -m "📊 증시 분석 업데이트: $(TZ=Asia/Seoul date '+%Y-%m-%d %H:%M KST')"
+          git push
