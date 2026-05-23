@@ -19,7 +19,7 @@ header{border-bottom:1px solid var(--border);padding:24px 40px;display:flex;just
 .idx-val{font-family:'JetBrains Mono',monospace;font-size:36px;font-weight:700;margin-bottom:4px;}
 .idx-chg{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;}
 .up{color:var(--up);}.down{color:var(--down);}.flat{color:var(--flat);}
-.data-date{text-align:center;color:var(--dim);font-size:13px;margin-bottom:32px;padding:8px;background:var(--surface);border-radius:8px;}
+.data-date{text-align:center;color:var(--accent);font-size:14px;font-weight:700;margin-bottom:32px;padding:12px;background:var(--surface);border-radius:8px;border:1px solid var(--border);}
 .sec{font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border);}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:40px;}
 .stock-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;}
@@ -39,62 +39,57 @@ footer{text-align:center;padding:32px;font-size:12px;color:var(--dim);border-top
 <body>
 <header>
 <div class="logo">KR<span>Market</span>AI</div>
-<div class="ts">updated: 20260523 10:12 KST</div>
+<div class="ts">updated: 20260523 10:25 KST</div>
 </header>
 <div class="wrap">
 <div class="data-date">📅 2026년 05월 22일 기준 데이터</div>
 <div class="idx">
 <div class="idx-card">
 <div class="idx-label">KOSPI</div>
-<div class="idx-val up">7,815.59</div>
-<div class="idx-chg up">▲ 8.42%</div>
+<div class="idx-val up">7,847.71</div>
+<div class="idx-chg up">▲ 0.41%</div>
 </div>
 <div class="idx-card">
 <div class="idx-label">KOSDAQ</div>
-<div class="idx-val up">1,105.97</div>
-<div class="idx-chg up">▲ 4.73%</div>
+<div class="idx-val up">1,161.13</div>
+<div class="idx-chg up">▲ 4.99%</div>
 </div>
 </div>
 <div class="sec">주요 종목</div>
 <div class="grid"><div class="stock-card down"><div class="stock-name">삼성전자</div><div class="stock-price">₩292,500</div><div class="stock-change down">▼ 2.34%</div></div><div class="stock-card up"><div class="stock-name">SK하이닉스</div><div class="stock-price">₩1,941,000</div><div class="stock-change up">▲ 0.05%</div></div><div class="stock-card up"><div class="stock-name">NAVER</div><div class="stock-price">₩203,000</div><div class="stock-change up">▲ 1.75%</div></div><div class="stock-card up"><div class="stock-name">카카오</div><div class="stock-price">₩41,850</div><div class="stock-change up">▲ 0.12%</div></div><div class="stock-card down"><div class="stock-name">현대차</div><div class="stock-price">₩655,000</div><div class="stock-change down">▼ 1.65%</div></div><div class="stock-card down"><div class="stock-name">LG에너지솔루션</div><div class="stock-price">₩398,500</div><div class="stock-change down">▼ 0.62%</div></div><div class="stock-card up"><div class="stock-name">셀트리온</div><div class="stock-price">₩198,700</div><div class="stock-change up">▲ 4.80%</div></div><div class="stock-card up"><div class="stock-name">POSCO홀딩스</div><div class="stock-price">₩447,500</div><div class="stock-change up">▲ 0.90%</div></div><div class="stock-card down"><div class="stock-name">기아</div><div class="stock-price">₩164,800</div><div class="stock-change down">▼ 1.85%</div></div><div class="stock-card up"><div class="stock-name">KB금융</div><div class="stock-price">₩160,000</div><div class="stock-change up">▲ 2.70%</div></div></div>
 <div class="sec">AI 분석 리포트</div>
 <div class="report">
-<p># 2026년 05월 22일 한국 증시 투자 가이드</p><p><h2>1. 오늘의 시장 요약</h2>
-한국 증시가 강력한 상승세를 보이며 마감했습니다. KOSPI는 8.42% 급등하여 7,815.59포인트를 기록했고, KOSDAQ도 4.73% 상승한 1,105.97포인트로 마감했습니다. 전반적으로 바이오주와 금융주가 상승을 주도했으며, 일부 대형주는 조정을 받는 모습을 보였습니다.</p><p><h2>2. 주요 지표 해석</h2>
-<li><strong>KOSPI 8.42% 급등</strong>: 매우 강력한 상승세로 시장 심리가 크게 개선된 것으로 판단</li>
-<li><strong>KOSDAQ 4.73% 상승</strong>: 중소형주와 성장주에 대한 관심이 증가</li>
-<li><strong>대형주 혼조</strong>: 삼성전자(-2.34%), 현대차(-1.65%) 등 일부 대형주는 차익실현 매물 출회</li>
-<li><strong>바이오주 강세</strong>: 셀트리온 4.8% 급등으로 바이오 섹터 관심 증가</li>
-<li><strong>금융주 상승</strong>: KB금융 2.7% 상승으로 금융 섹터 회복 신호</li></p><p><h2>3. 투자 전략</h2>
-<strong>단기 전략</strong>: 시장의 강력한 상승 모멘텀을 활용하되, 급등 후 조정 가능성에 대비한 분할 매수 전략 권장</p><p><strong>중장기 전략</strong>: 
-<li>바이오/헬스케어 섹터의 성장 잠재력 주목</li>
-<li>금융주의 실적 개선과 배당 매력 활용</li>
-<li>대형 테크주의 조정 시점을 매수 기회로 활용</li></p><p><h2>4. 추천 종목 3개</h2></p><p><h3>1) 셀트리온 (068270)</h3>
-<li><strong>추천 이유</strong>: 바이오 섹터 대표주로 4.8% 강세, 신약 파이프라인과 바이오시밀러 사업 성장성</li>
-<li><strong>진입가</strong>: 198,000원 ~ 202,000원</li>
-<li><strong>목표가</strong>: 230,000원</li>
-<li><strong>손절가</strong>: 185,000원</li></p><p><h3>2) KB금융 (105560)</h3>
-<li><strong>추천 이유</strong>: 금리 환경 개선과 실적 회복 기대, 안정적 배당 수익</li>
-<li><strong>진입가</strong>: 158,000원 ~ 162,000원</li>
-<li><strong>목표가</strong>: 180,000원</li>
-<li><strong>손절가</strong>: 150,000원</li></p><p><h3>3) NAVER (035420)</h3>
-<li><strong>추천 이유</strong>: AI 기술력과 플랫폼 경쟁력, 상승 모멘텀 지속 가능성</li>
-<li><strong>진입가</strong>: 200,000원 ~ 205,000원</li>
-<li><strong>목표가</strong>: 230,000원</li>
-<li><strong>손절가</strong>: 190,000원</li></p><p><h2>5. 주의 종목</h2></p><p><h3>삼성전자 (005930)</h3>
-<li>2.34% 하락으로 시장 대비 부진</li>
-<li>반도체 업황과 실적에 대한 우려 지속</li>
-<li>단기적으로 추가 조정 가능성 있어 관망 권장</li></p><p><h3>현대차 (005380)</h3>
-<li>1.65% 하락, 완성차 업종 전반적 부진</li>
-<li>전기차 경쟁 심화와 중국 시장 불확실성</li>
-<li>단기 투자보다는 중장기 관점에서 접근 필요</li></p><p><h2>6. 다음 거래일 관전 포인트</h2></p><p>1. <strong>KOSPI 7,800선 지지 여부</strong>: 급등 후 조정 시 주요 지지선 확인
-2. <strong>외국인 매매 동향</strong>: 급등장에서 외국인 자금 유출입 모니터링
-3. <strong>바이오 섹터 연속 상승 가능성</strong>: 셀트리온 외 다른 바이오주들의 동조화 여부
-4. <strong>반도체주 반등 신호</strong>: 삼성전자, SK하이닉스의 기술적 반등 가능성
-5. <strong>거래량 변화</strong>: 급등 후 거래량 감소 시 조정 가능성 증가</p><p><strong>투자 시 유의사항</strong>: 급등장 이후에는 변동성이 클 수 있으므로 리스크 관리를 철저히 하시기 바랍니다.</p>
+<p># 🔍 2026년 05월 22일 한국 증시 분석 리포트</p><p><h2>1. 오늘의 시장 요약</h2>
+코스피는 7,847.71로 전일 대비 0.41% 상승하며 소폭 상승 마감했으나, 코스닥은 1,161.13으로 4.99% 급등하며 강세를 보였습니다. 대형주는 혼조세를 보인 반면, 중소형주 중심의 코스닥 시장에서 강한 매수세가 유입되며 시장 전반의 위험선호 심리가 개선된 것으로 판단됩니다.</p><p><h2>2. 주요 지표 해석</h2>
+<li><strong>시장 상황</strong>: 코스닥의 5% 가까운 급등은 중소형 성장주에 대한 투자 심리 개선을 시사</li>
+<li><strong>섹터 차별화</strong>: IT(네이버 1.75% 상승), 바이오(셀트리온 4.8% 급등), 금융(KB금융 2.7% 상승) 강세</li>
+<li><strong>약세 섹터</strong>: 자동차(현대차 -1.65%, 기아 -1.85%), 반도체(삼성전자 -2.34%) 부진</li>
+<li><strong>시장 심리</strong>: 성장주 중심의 자금 이동과 업종 로테이션 진행 중</li></p><p><h2>3. 투자 전략</h2>
+<strong>단기 전략</strong>: 코스닥 급등에 따른 중소형 성장주 관심 증대, 하지만 과도한 추격 매수는 지양
+<strong>중기 전략</strong>: 바이오헬스케어, 핀테크, 신재생에너지 등 성장 테마주 선별 투자
+<strong>리스크 관리</strong>: 대형주 약세가 지속될 경우를 대비한 포트폴리오 분산 필요</p><p><h2>4. 추천 종목 3개</h2></p><p><h3>🟢 셀트리온 (068270)</h3>
+<li><strong>선정 이유</strong>: 4.8% 급등으로 바이오 섹터 강세 주도, 글로벌 바이오시밀러 시장 확대 수혜</li>
+<li><strong>진입가</strong>: 195,000원 (현재가 대비 -1.9%)</li>
+<li><strong>목표가</strong>: 220,000원 (+10.7%)</li>
+<li><strong>손절가</strong>: 185,000원 (-6.9%)</li></p><p><h3>🟢 KB금융 (105560)</h3>
+<li><strong>선정 이유</strong>: 2.7% 상승으로 금융주 강세, 금리 안정화 수혜 및 배당 매력</li>
+<li><strong>진입가</strong>: 157,000원 (현재가 대비 -1.9%)</li>
+<li><strong>목표가</strong>: 175,000원 (+9.4%)</li>
+<li><strong>손절가</strong>: 148,000원 (-7.5%)</li></p><p><h3>🟢 NAVER (035420)</h3>
+<li><strong>선정 이유</strong>: 1.75% 상승으로 IT 섹터 회복세, AI 사업 확장 및 클라우드 성장 기대</li>
+<li><strong>진입가</strong>: 200,000원 (현재가 대비 -1.5%)</li>
+<li><strong>목표가</strong>: 230,000원 (+13.3%)</li>
+<li><strong>손절가</strong>: 188,000원 (-7.4%)</li></p><p><h2>5. 주의 종목</h2></p><p><h3>⚠️ 삼성전자 (005930)</h3>
+-2.34% 하락으로 반도체 업황 우려와 대형주 약세 지속, 추가 조정 가능성</p><p><h3>⚠️ 현대차 (005380)</h3>
+-1.65% 하락으로 자동차 섹터 전반 부진, 전기차 경쟁 심화 우려</p><p><h3>⚠️ 기아 (000270)</h3>
+-1.85% 하락으로 현대차그룹 전체 약세, 단기 반등 어려울 전망</p><p><h2>6. 다음 거래일 관전 포인트</h2></p><p>1. <strong>코스닥 상승 지속성</strong>: 5% 급등 이후 조정 없이 상승세가 이어질지 여부
+2. <strong>대형주 반등 신호</strong>: 삼성전자, 현대차 등 주요 대형주의 저점 매수세 유입 여부
+3. <strong>외국인 투자자 동향</strong>: 코스닥 급등에 대한 외국인의 반응과 매매 방향
+4. <strong>섹터 로테이션</strong>: IT, 바이오, 금융 중심의 강세가 다른 업종으로 확산될지 모니터링
+5. <strong>거래량 변화</strong>: 코스닥 거래 증가세의 지속성과 시장 참여도 확인</p><p><strong>투자 시 유의사항</strong>: 본 분석은 투자 참고용이며, 개인의 투자 성향과 리스크 허용도를 고려하여 신중한 투자 결정을 내리시기 바랍니다.</p>
 <div class="disc">면책고지: 이 분석은 Claude AI가 생성한 참고 정보입니다. 투자 결정의 최종 책임은 투자자 본인에게 있습니다.</div>
 </div>
 </div>
-<footer>KRMarketAI · Powered by Claude AI · Data: KRX / Yahoo Finance</footer>
+<footer>KRMarketAI · Powered by Claude AI · Data: Yahoo Finance</footer>
 </body>
 </html>
