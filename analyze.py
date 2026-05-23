@@ -2,11 +2,10 @@ import os
 import json
 import datetime
 import requests
-from urllib.parse import quote
 
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 
-STOCKS = {
+STOCK_CODES = {
     "삼성전자": "005930",
     "SK하이닉스": "000660",
     "NAVER": "035420",
@@ -19,64 +18,105 @@ STOCKS = {
     "KB금융": "105560",
 }
 
-def fetch_index(symbol):
-    """네이버 금융에서 지수 데이터 조회"""
-    url = f"https://finance.naver.com/sise/sise_index.naver?code={symbol}"
-    headers = {"User-Agent": "Mozilla/5.0", "Referer": "https://finance.naver.com"}
-    try:
-        r = requests.get(url, headers=headers, timeout=10)
-        r.encoding = "euc-kr"
-        text = r.text
-        import re
-        price = re.search(r'<strong id="now_value"[^>]*>([\d,\.]+)</strong>', text)
-        change = re.search(r'<strong id="change_value"[^>]*>([\d,\.]+)</strong>', text)
-        updown = re.search(r'<span class="(up|down)">', text)
-        rate = re.search(r'<strong id="change_rate"[^>]*>([\d\.]+)</strong>', text)
-        
-        price_val = float(price.group(1).replace(",", "")) if price else 0
-        rate_val = float(rate.group(1)) if rate else 0
-        direction = updown.group(1) if updown else "up"
-        change_pct = rate_val if direction == "up" else -rate_val
-        
-        return {"price": price_val, "change_pct": change_pct}
-    except Exception as e:
-        return {"price": 0, "change_pct": 0, "error": str(e)}
+def get_date_str():
+    kst = datetime.datetime.utcnow() + datetime.timedelta(hours=9)
+    # 주말이면 금요일로
+    if kst.weekday() == 5:
+        kst -= datetime.timedelta(days=1)
+    elif kst.weekday() == 6:
+        kst -= datetime.timedelta(days=2)
+    return kst.strftime("%Y%m%d")
 
-def fetch_stock(code, name):
-    """네이버 금융에서 종목 데이터 조회"""
-    url = f"https://finance.naver.com/item/main.naver?code={code}"
-    headers = {"User-Agent": "Mozilla/5.0", "Referer": "https://finance.naver.com"}
+def fetch_krx_index():
+    """KRX에서 KOSPI/KOSDAQ 지수 조회"""
+    date = get_date_str()
+    url = "http://data.krx.co.kr/comm/bldAttendant/getJsonData.cmd"
+    headers = {
+        "User-Agent": "Mozilla/5.0",
+        "Referer": "http://data.krx.co.kr",
+        "Content-Type": "application/x-www-form-urlencoded",
+    }
+    data = {
+        "bld": "dbms/MDC/STAT/standard/MDCSTAT00301",
+        "locale": "ko_KR",
+        "trdDd": date,
+        "share": "1",
+        "money": "1",
+        "csvxls_isNo": "false",
+    }
     try:
-        r = requests.get(url, headers=headers, timeout=10)
-        r.encoding = "euc-kr"
-        text = r.text
-        import re
-        price = re.search(r'<p class="no_today">.*?<span class="blind">현재가</span>.*?<span[^>]*>([\d,]+)</span>', text, re.DOTALL)
-        rate = re.search(r'<span class="(p_dn|p_up)"[^>]*>.*?<span[^>]*>([\d\.]+)%</span>', text, re.DOTALL)
-        
-        price_val = int(price.group(1).replace(",", "")) if price else 0
-        rate_val = float(rate.group(2)) if rate else 0
-        direction = rate.group(1) if rate else "p_up"
-        change_pct = rate_val if direction == "p_up" else -rate_val
-        
-        return {"price": price_val, "change_pct": change_pct}
+        r = requests.post(url, headers=headers, data=data, timeout=10)
+        result = r.json()
+        indices = {}
+        for item in result.get("output", []):
+            name = item.get("IDX_NM", "")
+            price = float(item.get("CLSPRC_IDX", "0").replace(",", ""))
+            change_pct = float(item.get("FLUC_RT", "0").replace(",", ""))
+            updown = item.get("UPDN_SGNL", "")
+            if updown == "2":
+                change_pct = -change_pct
+            if "코스피" in name and "200" not in name:
+                indices["KOSPI"] = {"price": price, "change_pct": change_pct}
+            elif "코스닥" in name and "150" not in name:
+                indices["KOSDAQ"] = {"price": price, "change_pct": change_pct}
+        return indices
     except Exception as e:
-        return {"price": 0, "change_pct": 0, "error": str(e)}
+        print(f"KRX 지수 오류: {e}")
+        return {"KOSPI": {"price": 0, "change_pct": 0}, "KOSDAQ": {"price": 0, "change_pct": 0}}
+
+def fetch_krx_stocks():
+    """KRX에서 종목별 시세 조회"""
+    date = get_date_str()
+    url = "http://data.krx.co.kr/comm/bldAttendant/getJsonData.cmd"
+    headers = {
+        "User-Agent": "Mozilla/5.0",
+        "Referer": "http://data.krx.co.kr",
+        "Content-Type": "application/x-www-form-urlencoded",
+    }
+    data = {
+        "bld": "dbms/MDC/STAT/standard/MDCSTAT01501",
+        "locale": "ko_KR",
+        "mktId": "STK",
+        "trdDd": date,
+        "share": "1",
+        "money": "1",
+        "csvxls_isNo": "false",
+    }
+    try:
+        r = requests.post(url, headers=headers, data=data, timeout=15)
+        result = r.json()
+        stock_map = {}
+        for item in result.get("output", []):
+            code = item.get("ISU_SRT_CD", "")
+            price = float(item.get("TDD_CLSPRC", "0").replace(",", ""))
+            change_pct = float(item.get("FLUC_RT", "0").replace(",", ""))
+            updown = item.get("UPDN_SGNL", "")
+            if updown == "2":
+                change_pct = -change_pct
+            stock_map[code] = {"price": price, "change_pct": change_pct}
+        return stock_map
+    except Exception as e:
+        print(f"KRX 종목 오류: {e}")
+        return {}
 
 def collect_market_data():
-    print("네이버 금융에서 데이터 수집 중...")
+    print("KRX 데이터 수집 중...")
     results = {}
-    
-    results["KOSPI"] = fetch_index("KOSPI")
+
+    indices = fetch_krx_index()
+    results["KOSPI"] = indices.get("KOSPI", {"price": 0, "change_pct": 0})
+    results["KOSDAQ"] = indices.get("KOSDAQ", {"price": 0, "change_pct": 0})
     print(f"  KOSPI: {results['KOSPI']}")
-    
-    results["KOSDAQ"] = fetch_index("KOSDAQ")
     print(f"  KOSDAQ: {results['KOSDAQ']}")
-    
-    for name, code in STOCKS.items():
-        results[name] = fetch_stock(code, name)
+
+    stock_map = fetch_krx_stocks()
+    for name, code in STOCK_CODES.items():
+        if code in stock_map:
+            results[name] = stock_map[code]
+        else:
+            results[name] = {"price": 0, "change_pct": 0}
         print(f"  {name}: {results[name]}")
-    
+
     return results
 
 def call_claude(market_data):
@@ -126,10 +166,10 @@ def build_html(market_data, analysis):
 
     stock_cards = ""
     for name, d in market_data.items():
-        if name in ("KOSPI", "KOSDAQ") or "error" in d:
+        if name in ("KOSPI", "KOSDAQ"):
             continue
         cp = d.get("change_pct", 0)
-        stock_cards += f'<div class="stock-card {cc(cp)}"><div class="stock-name">{name}</div><div class="stock-price">₩{d.get("price", 0):,}</div><div class="stock-change {cc(cp)}">{ca(cp)} {abs(cp):.2f}%</div></div>'
+        stock_cards += f'<div class="stock-card {cc(cp)}"><div class="stock-name">{name}</div><div class="stock-price">₩{d.get("price", 0):,.0f}</div><div class="stock-change {cc(cp)}">{ca(cp)} {abs(cp):.2f}%</div></div>'
 
     import re
     html_analysis = analysis
@@ -206,7 +246,7 @@ footer{{text-align:center;padding:32px;font-size:12px;color:var(--dim);border-to
 <div class="disc">면책고지: 이 분석은 Claude AI가 생성한 참고 정보입니다. 투자 결정의 최종 책임은 투자자 본인에게 있습니다.</div>
 </div>
 </div>
-<footer>KRMarketAI · Powered by Claude AI · Data: 네이버 금융</footer>
+<footer>KRMarketAI · Powered by Claude AI · Data: 한국거래소(KRX)</footer>
 </body>
 </html>"""
 
