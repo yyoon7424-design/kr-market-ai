@@ -1,4 +1,4 @@
-import os
+    import os
 import json
 import datetime
 import requests
@@ -18,112 +18,136 @@ STOCK_CODES = {
     "KB금융": "105560",
 }
 
-def get_date_str():
-    kst = datetime.datetime.utcnow() + datetime.timedelta(hours=9)
-    # 주말이면 금요일로
-    if kst.weekday() == 5:
-        kst -= datetime.timedelta(days=1)
-    elif kst.weekday() == 6:
-        kst -= datetime.timedelta(days=2)
-    return kst.strftime("%Y%m%d")
+YAHOO_TICKERS = {
+    "삼성전자": "005930.KS",
+    "SK하이닉스": "000660.KS",
+    "NAVER": "035420.KS",
+    "카카오": "035720.KS",
+    "현대차": "005380.KS",
+    "LG에너지솔루션": "373220.KS",
+    "셀트리온": "068270.KS",
+    "POSCO홀딩스": "005490.KS",
+    "기아": "000270.KS",
+    "KB금융": "105560.KS",
+    "KOSPI": "^KS11",
+    "KOSDAQ": "^KQ11",
+}
 
-def fetch_krx_index():
-    """KRX에서 KOSPI/KOSDAQ 지수 조회"""
-    date = get_date_str()
+def get_last_trading_date():
+    """가장 최근 거래일 날짜 반환 (주말이면 금요일)"""
+    kst = datetime.datetime.utcnow() + datetime.timedelta(hours=9)
+    weekday = kst.weekday()
+    if weekday == 5:  # 토요일
+        kst -= datetime.timedelta(days=1)
+    elif weekday == 6:  # 일요일
+        kst -= datetime.timedelta(days=2)
+    return kst.strftime("%Y%m%d"), kst.strftime("%Y년 %m월 %d일")
+
+def fetch_krx_data(date_str):
+    """KRX에서 지수 + 종목 데이터 조회"""
     url = "http://data.krx.co.kr/comm/bldAttendant/getJsonData.cmd"
     headers = {
         "User-Agent": "Mozilla/5.0",
         "Referer": "http://data.krx.co.kr",
         "Content-Type": "application/x-www-form-urlencoded",
     }
-    data = {
-        "bld": "dbms/MDC/STAT/standard/MDCSTAT00301",
-        "locale": "ko_KR",
-        "trdDd": date,
-        "share": "1",
-        "money": "1",
-        "csvxls_isNo": "false",
-    }
+
+    results = {}
+
+    # 지수 조회
     try:
-        r = requests.post(url, headers=headers, data=data, timeout=10)
-        result = r.json()
-        indices = {}
-        for item in result.get("output", []):
+        r = requests.post(url, headers=headers, timeout=10, data={
+            "bld": "dbms/MDC/STAT/standard/MDCSTAT00301",
+            "locale": "ko_KR",
+            "trdDd": date_str,
+            "share": "1",
+            "money": "1",
+            "csvxls_isNo": "false",
+        })
+        for item in r.json().get("output", []):
             name = item.get("IDX_NM", "")
             price = float(item.get("CLSPRC_IDX", "0").replace(",", ""))
             change_pct = float(item.get("FLUC_RT", "0").replace(",", ""))
-            updown = item.get("UPDN_SGNL", "")
-            if updown == "2":
+            if item.get("UPDN_SGNL") == "2":
                 change_pct = -change_pct
-            if "코스피" in name and "200" not in name:
-                indices["KOSPI"] = {"price": price, "change_pct": change_pct}
-            elif "코스닥" in name and "150" not in name:
-                indices["KOSDAQ"] = {"price": price, "change_pct": change_pct}
-        return indices
+            if "코스피" in name and "200" not in name and "배당" not in name:
+                results["KOSPI"] = {"price": price, "change_pct": change_pct}
+            elif "코스닥" in name and "150" not in name and "배당" not in name:
+                results["KOSDAQ"] = {"price": price, "change_pct": change_pct}
     except Exception as e:
         print(f"KRX 지수 오류: {e}")
-        return {"KOSPI": {"price": 0, "change_pct": 0}, "KOSDAQ": {"price": 0, "change_pct": 0}}
 
-def fetch_krx_stocks():
-    """KRX에서 종목별 시세 조회"""
-    date = get_date_str()
-    url = "http://data.krx.co.kr/comm/bldAttendant/getJsonData.cmd"
-    headers = {
-        "User-Agent": "Mozilla/5.0",
-        "Referer": "http://data.krx.co.kr",
-        "Content-Type": "application/x-www-form-urlencoded",
-    }
-    data = {
-        "bld": "dbms/MDC/STAT/standard/MDCSTAT01501",
-        "locale": "ko_KR",
-        "mktId": "STK",
-        "trdDd": date,
-        "share": "1",
-        "money": "1",
-        "csvxls_isNo": "false",
-    }
+    # 종목 조회
     try:
-        r = requests.post(url, headers=headers, data=data, timeout=15)
-        result = r.json()
+        r = requests.post(url, headers=headers, timeout=15, data={
+            "bld": "dbms/MDC/STAT/standard/MDCSTAT01501",
+            "locale": "ko_KR",
+            "mktId": "STK",
+            "trdDd": date_str,
+            "share": "1",
+            "money": "1",
+            "csvxls_isNo": "false",
+        })
         stock_map = {}
-        for item in result.get("output", []):
+        for item in r.json().get("output", []):
             code = item.get("ISU_SRT_CD", "")
             price = float(item.get("TDD_CLSPRC", "0").replace(",", ""))
             change_pct = float(item.get("FLUC_RT", "0").replace(",", ""))
-            updown = item.get("UPDN_SGNL", "")
-            if updown == "2":
+            if item.get("UPDN_SGNL") == "2":
                 change_pct = -change_pct
             stock_map[code] = {"price": price, "change_pct": change_pct}
-        return stock_map
+
+        for name, code in STOCK_CODES.items():
+            if code in stock_map:
+                results[name] = stock_map[code]
     except Exception as e:
         print(f"KRX 종목 오류: {e}")
-        return {}
-
-def collect_market_data():
-    print("KRX 데이터 수집 중...")
-    results = {}
-
-    indices = fetch_krx_index()
-    results["KOSPI"] = indices.get("KOSPI", {"price": 0, "change_pct": 0})
-    results["KOSDAQ"] = indices.get("KOSDAQ", {"price": 0, "change_pct": 0})
-    print(f"  KOSPI: {results['KOSPI']}")
-    print(f"  KOSDAQ: {results['KOSDAQ']}")
-
-    stock_map = fetch_krx_stocks()
-    for name, code in STOCK_CODES.items():
-        if code in stock_map:
-            results[name] = stock_map[code]
-        else:
-            results[name] = {"price": 0, "change_pct": 0}
-        print(f"  {name}: {results[name]}")
 
     return results
 
-def call_claude(market_data):
-    kst_now = datetime.datetime.utcnow() + datetime.timedelta(hours=9)
-    date_str = kst_now.strftime("%Y년 %m월 %d일")
+def fetch_yahoo_data():
+    """Yahoo Finance에서 종가 기준 등락률 직접 계산"""
+    results = {}
+    headers = {"User-Agent": "Mozilla/5.0"}
+    for name, ticker in YAHOO_TICKERS.items():
+        try:
+            url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?interval=1d&range=5d"
+            r = requests.get(url, headers=headers, timeout=10)
+            data = r.json()
+            closes = data["chart"]["result"][0]["indicators"]["quote"][0].get("close", [])
+            closes = [c for c in closes if c is not None]
+            if len(closes) >= 2:
+                current = closes[-1]
+                prev = closes[-2]
+                change_pct = round((current - prev) / prev * 100, 2)
+                results[name] = {"price": round(current, 2), "change_pct": change_pct}
+            else:
+                results[name] = {"price": 0, "change_pct": 0}
+        except Exception as e:
+            results[name] = {"price": 0, "change_pct": 0}
+    return results
+
+def collect_market_data():
+    date_str, _ = get_last_trading_date()
+    print(f"거래일: {date_str}")
+
+    # KRX 먼저 시도
+    print("KRX 데이터 수집 중...")
+    results = fetch_krx_data(date_str)
+
+    # KRX 실패 시 Yahoo Finance로 대체
+    if not results.get("KOSPI") or results["KOSPI"]["price"] == 0:
+        print("KRX 실패 → Yahoo Finance로 대체...")
+        results = fetch_yahoo_data()
+
+    for name, val in results.items():
+        print(f"  {name}: {val}")
+
+    return results
+
+def call_claude(market_data, date_label):
     prompt = f"""당신은 한국 주식시장 전문 애널리스트입니다.
-아래 {date_str} 기준 한국 증시 데이터를 분석해 투자 가이드를 작성해주세요.
+아래 {date_label} 기준 한국 증시 데이터를 분석해 투자 가이드를 작성해주세요.
 
 데이터: {json.dumps(market_data, ensure_ascii=False)}
 
@@ -133,7 +157,7 @@ def call_claude(market_data):
 ### 3. 투자 전략
 ### 4. 추천 종목 3개 (종목명, 이유, 진입가, 목표가, 손절가)
 ### 5. 주의 종목
-### 6. 내일 관전 포인트"""
+### 6. 다음 거래일 관전 포인트"""
 
     headers = {
         "x-api-key": ANTHROPIC_API_KEY,
@@ -148,9 +172,9 @@ def call_claude(market_data):
     r = requests.post("https://api.anthropic.com/v1/messages", headers=headers, json=body, timeout=60)
     return r.json()["content"][0]["text"]
 
-def build_html(market_data, analysis):
+def build_html(market_data, analysis, date_label):
     kst_now = datetime.datetime.utcnow() + datetime.timedelta(hours=9)
-    date_str = kst_now.strftime("%Y%m%d %H:%M KST")
+    updated_str = kst_now.strftime("%Y%m%d %H:%M KST")
     kospi = market_data.get("KOSPI", {})
     kosdaq = market_data.get("KOSDAQ", {})
 
@@ -204,6 +228,7 @@ header{{border-bottom:1px solid var(--border);padding:24px 40px;display:flex;jus
 .idx-val{{font-family:'JetBrains Mono',monospace;font-size:36px;font-weight:700;margin-bottom:4px;}}
 .idx-chg{{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;}}
 .up{{color:var(--up);}}.down{{color:var(--down);}}.flat{{color:var(--flat);}}
+.data-date{{text-align:center;color:var(--dim);font-size:13px;margin-bottom:32px;}}
 .sec{{font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border);}}
 .grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:40px;}}
 .stock-card{{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;}}
@@ -223,9 +248,10 @@ footer{{text-align:center;padding:32px;font-size:12px;color:var(--dim);border-to
 <body>
 <header>
 <div class="logo">KR<span>Market</span>AI</div>
-<div class="ts">updated: {date_str}</div>
+<div class="ts">updated: {updated_str}</div>
 </header>
 <div class="wrap">
+<div class="data-date">📅 {date_label} 기준 데이터</div>
 <div class="idx">
 <div class="idx-card">
 <div class="idx-label">KOSPI</div>
@@ -246,14 +272,15 @@ footer{{text-align:center;padding:32px;font-size:12px;color:var(--dim);border-to
 <div class="disc">면책고지: 이 분석은 Claude AI가 생성한 참고 정보입니다. 투자 결정의 최종 책임은 투자자 본인에게 있습니다.</div>
 </div>
 </div>
-<footer>KRMarketAI · Powered by Claude AI · Data: 한국거래소(KRX)</footer>
+<footer>KRMarketAI · Powered by Claude AI · Data: KRX / Yahoo Finance</footer>
 </body>
 </html>"""
 
 def main():
+    date_str, date_label = get_last_trading_date()
     market_data = collect_market_data()
-    analysis = call_claude(market_data)
-    html = build_html(market_data, analysis)
+    analysis = call_claude(market_data, date_label)
+    html = build_html(market_data, analysis, date_label)
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(html)
     print("Done!")
