@@ -21,16 +21,14 @@ TICKERS = {
 }
 
 def fetch_quote(ticker):
-    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?interval=1d&range=5d"
+    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?interval=1d&range=2d"
     headers = {"User-Agent": "Mozilla/5.0"}
     try:
         r = requests.get(url, headers=headers, timeout=10)
         data = r.json()
         meta = data["chart"]["result"][0]["meta"]
-        closes = data["chart"]["result"][0]["indicators"]["quote"][0].get("close", [])
-        closes = [c for c in closes if c is not None]
-        prev_close = closes[-2] if len(closes) >= 2 else meta.get("previousClose", 0)
-        current = meta.get("regularMarketPrice") or (closes[-1] if closes else 0)
+        current = meta.get("regularMarketPrice", 0)
+        prev_close = meta.get("chartPreviousClose") or meta.get("previousClose", 0)
         change_pct = ((current - prev_close) / prev_close * 100) if prev_close else 0
         return {
             "ticker": ticker,
@@ -49,26 +47,28 @@ def collect_market_data():
     results = {}
     for name, ticker in TICKERS.items():
         results[name] = fetch_quote(ticker)
-        print(f"  {name} ({ticker})")
+        print(f"  {name}: {results[name]}")
     return results
 
 def call_claude(market_data):
     kst_now = datetime.datetime.utcnow() + datetime.timedelta(hours=9)
-    date_str = kst_now.strftime("%Y%m%d")
+    date_str = kst_now.strftime("%Y년 %m월 %d일")
 
-    prompt = f"""You are a Korean stock market analyst. Analyze this data from {date_str} and write in Korean.
+    prompt = f"""당신은 한국 주식시장 전문 애널리스트입니다.
+아래 {date_str} 기준 한국 증시 데이터를 분석해 투자 가이드를 작성해주세요.
 
-Data: {json.dumps(market_data, ensure_ascii=False)}
+데이터: {json.dumps(market_data, ensure_ascii=False)}
 
-Write analysis with these sections:
-1. Today market summary (3-4 lines about KOSPI/KOSDAQ)
-2. Key indicators analysis (notable stocks, 52w high/low position)
-3. Investment strategy (bullish/bearish/neutral, sector strategy)
-4. Recommended stocks (3 stocks with entry price, target, stop-loss, reason)
-5. Stocks to avoid (1-2 stocks with reason)
-6. Tomorrow watch points
+다음 구조로 한국어로 작성하세요:
 
-Use markdown formatting. Write in Korean."""
+### 1. 오늘의 시장 요약
+### 2. 주요 지표 해석
+### 3. 투자 전략
+### 4. 추천 종목 3개 (종목명, 이유, 진입가, 목표가, 손절가)
+### 5. 주의 종목
+### 6. 내일 관전 포인트
+
+마크다운 형식으로 작성하세요."""
 
     headers = {
         "x-api-key": ANTHROPIC_API_KEY,
@@ -150,8 +150,7 @@ header{{border-bottom:1px solid var(--border);padding:24px 40px;display:flex;jus
 .stock-price{{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;margin-bottom:4px;}}
 .stock-change{{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;}}
 .report{{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px;line-height:1.8;}}
-.report h2{{font-size:20px;font-weight:700;color:var(--accent);margin:28px 0 12px;padding-top:20px;border-top:1px solid var(--border);}}
-.report h3{{font-size:16px;font-weight:700;margin:20px 0 8px;}}
+.report h3{{font-size:16px;font-weight:700;color:var(--accent);margin:20px 0 8px;}}
 .report li{{margin-left:20px;margin-bottom:4px;color:#cbd5e1;}}
 .report strong{{color:#fff;}}.report p{{margin-bottom:12px;color:#cbd5e1;}}
 .disc{{margin-top:32px;padding:16px;border-radius:8px;background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.2);font-size:12px;color:var(--dim);}}
@@ -196,7 +195,7 @@ def main():
     html = build_html(market_data, analysis)
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(html)
-    print("Done! index.html created.")
+    print("Done!")
 
 if __name__ == "__main__":
     main()
