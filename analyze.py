@@ -1,4 +1,4 @@
-    import os
+import os
 import json
 import datetime
 import requests
@@ -19,6 +19,8 @@ STOCK_CODES = {
 }
 
 YAHOO_TICKERS = {
+    "KOSPI": "^KS11",
+    "KOSDAQ": "^KQ11",
     "삼성전자": "005930.KS",
     "SK하이닉스": "000660.KS",
     "NAVER": "035420.KS",
@@ -29,32 +31,24 @@ YAHOO_TICKERS = {
     "POSCO홀딩스": "005490.KS",
     "기아": "000270.KS",
     "KB금융": "105560.KS",
-    "KOSPI": "^KS11",
-    "KOSDAQ": "^KQ11",
 }
 
 def get_last_trading_date():
-    """가장 최근 거래일 날짜 반환 (주말이면 금요일)"""
     kst = datetime.datetime.utcnow() + datetime.timedelta(hours=9)
-    weekday = kst.weekday()
-    if weekday == 5:  # 토요일
+    if kst.weekday() == 5:
         kst -= datetime.timedelta(days=1)
-    elif weekday == 6:  # 일요일
+    elif kst.weekday() == 6:
         kst -= datetime.timedelta(days=2)
     return kst.strftime("%Y%m%d"), kst.strftime("%Y년 %m월 %d일")
 
 def fetch_krx_data(date_str):
-    """KRX에서 지수 + 종목 데이터 조회"""
     url = "http://data.krx.co.kr/comm/bldAttendant/getJsonData.cmd"
     headers = {
         "User-Agent": "Mozilla/5.0",
         "Referer": "http://data.krx.co.kr",
         "Content-Type": "application/x-www-form-urlencoded",
     }
-
     results = {}
-
-    # 지수 조회
     try:
         r = requests.post(url, headers=headers, timeout=10, data={
             "bld": "dbms/MDC/STAT/standard/MDCSTAT00301",
@@ -76,8 +70,6 @@ def fetch_krx_data(date_str):
                 results["KOSDAQ"] = {"price": price, "change_pct": change_pct}
     except Exception as e:
         print(f"KRX 지수 오류: {e}")
-
-    # 종목 조회
     try:
         r = requests.post(url, headers=headers, timeout=15, data={
             "bld": "dbms/MDC/STAT/standard/MDCSTAT01501",
@@ -96,17 +88,14 @@ def fetch_krx_data(date_str):
             if item.get("UPDN_SGNL") == "2":
                 change_pct = -change_pct
             stock_map[code] = {"price": price, "change_pct": change_pct}
-
         for name, code in STOCK_CODES.items():
             if code in stock_map:
                 results[name] = stock_map[code]
     except Exception as e:
         print(f"KRX 종목 오류: {e}")
-
     return results
 
 def fetch_yahoo_data():
-    """Yahoo Finance에서 종가 기준 등락률 직접 계산"""
     results = {}
     headers = {"User-Agent": "Mozilla/5.0"}
     for name, ticker in YAHOO_TICKERS.items():
@@ -128,22 +117,16 @@ def fetch_yahoo_data():
     return results
 
 def collect_market_data():
-    date_str, _ = get_last_trading_date()
+    date_str, date_label = get_last_trading_date()
     print(f"거래일: {date_str}")
-
-    # KRX 먼저 시도
     print("KRX 데이터 수집 중...")
     results = fetch_krx_data(date_str)
-
-    # KRX 실패 시 Yahoo Finance로 대체
     if not results.get("KOSPI") or results["KOSPI"]["price"] == 0:
-        print("KRX 실패 → Yahoo Finance로 대체...")
+        print("KRX 실패, Yahoo Finance로 대체...")
         results = fetch_yahoo_data()
-
     for name, val in results.items():
         print(f"  {name}: {val}")
-
-    return results
+    return results, date_label
 
 def call_claude(market_data, date_label):
     prompt = f"""당신은 한국 주식시장 전문 애널리스트입니다.
@@ -228,7 +211,7 @@ header{{border-bottom:1px solid var(--border);padding:24px 40px;display:flex;jus
 .idx-val{{font-family:'JetBrains Mono',monospace;font-size:36px;font-weight:700;margin-bottom:4px;}}
 .idx-chg{{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;}}
 .up{{color:var(--up);}}.down{{color:var(--down);}}.flat{{color:var(--flat);}}
-.data-date{{text-align:center;color:var(--dim);font-size:13px;margin-bottom:32px;}}
+.data-date{{text-align:center;color:var(--dim);font-size:13px;margin-bottom:32px;padding:8px;background:var(--surface);border-radius:8px;}}
 .sec{{font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border);}}
 .grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:40px;}}
 .stock-card{{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;}}
@@ -277,8 +260,7 @@ footer{{text-align:center;padding:32px;font-size:12px;color:var(--dim);border-to
 </html>"""
 
 def main():
-    date_str, date_label = get_last_trading_date()
-    market_data = collect_market_data()
+    market_data, date_label = collect_market_data()
     analysis = call_claude(market_data, date_label)
     html = build_html(market_data, analysis, date_label)
     with open("index.html", "w", encoding="utf-8") as f:
