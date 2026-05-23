@@ -2,51 +2,81 @@ import os
 import json
 import datetime
 import requests
+from urllib.parse import quote
 
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 
-TICKERS = {
-    "KOSPI": "^KS11",
-    "KOSDAQ": "^KQ11",
-    "Samsung": "005930.KS",
-    "SK Hynix": "000660.KS",
-    "NAVER": "035420.KS",
-    "Kakao": "035720.KS",
-    "Hyundai": "005380.KS",
-    "LG Energy": "373220.KS",
-    "Celltrion": "068270.KS",
-    "POSCO": "005490.KS",
-    "Kia": "000270.KS",
-    "KB Finance": "105560.KS",
+STOCKS = {
+    "삼성전자": "005930",
+    "SK하이닉스": "000660",
+    "NAVER": "035420",
+    "카카오": "035720",
+    "현대차": "005380",
+    "LG에너지솔루션": "373220",
+    "셀트리온": "068270",
+    "POSCO홀딩스": "005490",
+    "기아": "000270",
+    "KB금융": "105560",
 }
 
-def fetch_quote(ticker):
-    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?interval=1d&range=1d"
-    headers = {"User-Agent": "Mozilla/5.0"}
+def fetch_index(symbol):
+    """네이버 금융에서 지수 데이터 조회"""
+    url = f"https://finance.naver.com/sise/sise_index.naver?code={symbol}"
+    headers = {"User-Agent": "Mozilla/5.0", "Referer": "https://finance.naver.com"}
     try:
         r = requests.get(url, headers=headers, timeout=10)
-        data = r.json()
-        meta = data["chart"]["result"][0]["meta"]
-        current = meta.get("regularMarketPrice", 0)
-        change_pct = meta.get("regularMarketChangePercent", 0)
-        prev_close = meta.get("chartPreviousClose", 0) or meta.get("previousClose", 0)
-        return {
-            "ticker": ticker,
-            "price": round(current, 2),
-            "prev_close": round(prev_close, 2),
-            "change_pct": round(change_pct, 2),
-            "volume": meta.get("regularMarketVolume", 0),
-            "52w_high": meta.get("fiftyTwoWeekHigh", 0),
-            "52w_low": meta.get("fiftyTwoWeekLow", 0),
-        }
+        r.encoding = "euc-kr"
+        text = r.text
+        import re
+        price = re.search(r'<strong id="now_value"[^>]*>([\d,\.]+)</strong>', text)
+        change = re.search(r'<strong id="change_value"[^>]*>([\d,\.]+)</strong>', text)
+        updown = re.search(r'<span class="(up|down)">', text)
+        rate = re.search(r'<strong id="change_rate"[^>]*>([\d\.]+)</strong>', text)
+        
+        price_val = float(price.group(1).replace(",", "")) if price else 0
+        rate_val = float(rate.group(1)) if rate else 0
+        direction = updown.group(1) if updown else "up"
+        change_pct = rate_val if direction == "up" else -rate_val
+        
+        return {"price": price_val, "change_pct": change_pct}
     except Exception as e:
-        return {"ticker": ticker, "error": str(e)}
+        return {"price": 0, "change_pct": 0, "error": str(e)}
+
+def fetch_stock(code, name):
+    """네이버 금융에서 종목 데이터 조회"""
+    url = f"https://finance.naver.com/item/main.naver?code={code}"
+    headers = {"User-Agent": "Mozilla/5.0", "Referer": "https://finance.naver.com"}
+    try:
+        r = requests.get(url, headers=headers, timeout=10)
+        r.encoding = "euc-kr"
+        text = r.text
+        import re
+        price = re.search(r'<p class="no_today">.*?<span class="blind">현재가</span>.*?<span[^>]*>([\d,]+)</span>', text, re.DOTALL)
+        rate = re.search(r'<span class="(p_dn|p_up)"[^>]*>.*?<span[^>]*>([\d\.]+)%</span>', text, re.DOTALL)
+        
+        price_val = int(price.group(1).replace(",", "")) if price else 0
+        rate_val = float(rate.group(2)) if rate else 0
+        direction = rate.group(1) if rate else "p_up"
+        change_pct = rate_val if direction == "p_up" else -rate_val
+        
+        return {"price": price_val, "change_pct": change_pct}
+    except Exception as e:
+        return {"price": 0, "change_pct": 0, "error": str(e)}
 
 def collect_market_data():
+    print("네이버 금융에서 데이터 수집 중...")
     results = {}
-    for name, ticker in TICKERS.items():
-        results[name] = fetch_quote(ticker)
-        print(f"  {name}: price={results[name].get('price')} change={results[name].get('change_pct')}%")
+    
+    results["KOSPI"] = fetch_index("KOSPI")
+    print(f"  KOSPI: {results['KOSPI']}")
+    
+    results["KOSDAQ"] = fetch_index("KOSDAQ")
+    print(f"  KOSDAQ: {results['KOSDAQ']}")
+    
+    for name, code in STOCKS.items():
+        results[name] = fetch_stock(code, name)
+        print(f"  {name}: {results[name]}")
+    
     return results
 
 def call_claude(market_data):
@@ -99,7 +129,7 @@ def build_html(market_data, analysis):
         if name in ("KOSPI", "KOSDAQ") or "error" in d:
             continue
         cp = d.get("change_pct", 0)
-        stock_cards += f'<div class="stock-card {cc(cp)}"><div class="stock-name">{name}</div><div class="stock-price">{d.get("price", 0):,.0f}</div><div class="stock-change {cc(cp)}">{ca(cp)} {abs(cp):.2f}%</div></div>'
+        stock_cards += f'<div class="stock-card {cc(cp)}"><div class="stock-name">{name}</div><div class="stock-price">₩{d.get("price", 0):,}</div><div class="stock-change {cc(cp)}">{ca(cp)} {abs(cp):.2f}%</div></div>'
 
     import re
     html_analysis = analysis
@@ -176,7 +206,7 @@ footer{{text-align:center;padding:32px;font-size:12px;color:var(--dim);border-to
 <div class="disc">면책고지: 이 분석은 Claude AI가 생성한 참고 정보입니다. 투자 결정의 최종 책임은 투자자 본인에게 있습니다.</div>
 </div>
 </div>
-<footer>KRMarketAI · Powered by Claude AI · Data: Yahoo Finance</footer>
+<footer>KRMarketAI · Powered by Claude AI · Data: 네이버 금융</footer>
 </body>
 </html>"""
 
