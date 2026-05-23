@@ -21,15 +21,15 @@ TICKERS = {
 }
 
 def fetch_quote(ticker):
-    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?interval=1d&range=2d"
+    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?interval=1d&range=1d"
     headers = {"User-Agent": "Mozilla/5.0"}
     try:
         r = requests.get(url, headers=headers, timeout=10)
         data = r.json()
         meta = data["chart"]["result"][0]["meta"]
         current = meta.get("regularMarketPrice", 0)
-        prev_close = meta.get("chartPreviousClose") or meta.get("previousClose", 0)
-        change_pct = ((current - prev_close) / prev_close * 100) if prev_close else 0
+        change_pct = meta.get("regularMarketChangePercent", 0)
+        prev_close = meta.get("chartPreviousClose", 0) or meta.get("previousClose", 0)
         return {
             "ticker": ticker,
             "price": round(current, 2),
@@ -43,32 +43,27 @@ def fetch_quote(ticker):
         return {"ticker": ticker, "error": str(e)}
 
 def collect_market_data():
-    print("Collecting market data...")
     results = {}
     for name, ticker in TICKERS.items():
         results[name] = fetch_quote(ticker)
-        print(f"  {name}: {results[name]}")
+        print(f"  {name}: price={results[name].get('price')} change={results[name].get('change_pct')}%")
     return results
 
 def call_claude(market_data):
     kst_now = datetime.datetime.utcnow() + datetime.timedelta(hours=9)
     date_str = kst_now.strftime("%Y년 %m월 %d일")
-
     prompt = f"""당신은 한국 주식시장 전문 애널리스트입니다.
 아래 {date_str} 기준 한국 증시 데이터를 분석해 투자 가이드를 작성해주세요.
 
 데이터: {json.dumps(market_data, ensure_ascii=False)}
 
 다음 구조로 한국어로 작성하세요:
-
 ### 1. 오늘의 시장 요약
 ### 2. 주요 지표 해석
 ### 3. 투자 전략
 ### 4. 추천 종목 3개 (종목명, 이유, 진입가, 목표가, 손절가)
 ### 5. 주의 종목
-### 6. 내일 관전 포인트
-
-마크다운 형식으로 작성하세요."""
+### 6. 내일 관전 포인트"""
 
     headers = {
         "x-api-key": ANTHROPIC_API_KEY,
@@ -80,15 +75,12 @@ def call_claude(market_data):
         "max_tokens": 2000,
         "messages": [{"role": "user", "content": prompt}],
     }
-    print("Calling Claude API...")
     r = requests.post("https://api.anthropic.com/v1/messages", headers=headers, json=body, timeout=60)
-    result = r.json()
-    return result["content"][0]["text"]
+    return r.json()["content"][0]["text"]
 
 def build_html(market_data, analysis):
     kst_now = datetime.datetime.utcnow() + datetime.timedelta(hours=9)
     date_str = kst_now.strftime("%Y%m%d %H:%M KST")
-
     kospi = market_data.get("KOSPI", {})
     kosdaq = market_data.get("KOSDAQ", {})
 
@@ -121,7 +113,7 @@ def build_html(market_data, analysis):
     kp = kospi.get("change_pct", 0)
     kq = kosdaq.get("change_pct", 0)
 
-    html = f"""<!DOCTYPE html>
+    return f"""<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -187,7 +179,6 @@ footer{{text-align:center;padding:32px;font-size:12px;color:var(--dim);border-to
 <footer>KRMarketAI · Powered by Claude AI · Data: Yahoo Finance</footer>
 </body>
 </html>"""
-    return html
 
 def main():
     market_data = collect_market_data()
