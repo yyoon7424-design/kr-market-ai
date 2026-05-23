@@ -13,36 +13,54 @@ header{border-bottom:1px solid var(--border);padding:24px 40px;display:flex;just
 .logo{font-size:20px;font-weight:900;}.logo span{color:var(--accent);}
 .ts{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--dim);}
 .wrap{max-width:1200px;margin:0 auto;padding:40px 24px;}
+.data-date{text-align:center;color:var(--accent);font-size:14px;font-weight:700;margin-bottom:32px;padding:12px;background:var(--surface);border-radius:8px;border:1px solid var(--border);}
 .idx{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:40px;}
 .idx-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;}
 .idx-label{font-size:12px;color:var(--dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
 .idx-val{font-family:'JetBrains Mono',monospace;font-size:36px;font-weight:700;margin-bottom:4px;}
 .idx-chg{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;}
 .up{color:var(--up);}.down{color:var(--down);}.flat{color:var(--flat);}
-.data-date{text-align:center;color:var(--accent);font-size:14px;font-weight:700;margin-bottom:32px;padding:12px;background:var(--surface);border-radius:8px;border:1px solid var(--border);}
-.sec{font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border);}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:40px;}
+.sec{font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border);margin-top:40px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:16px;}
 .stock-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;}
 .stock-card.up{border-left:3px solid var(--up);}.stock-card.down{border-left:3px solid var(--down);}
 .stock-name{font-size:13px;color:var(--dim);margin-bottom:6px;}
 .stock-price{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;margin-bottom:4px;}
 .stock-change{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;}
+.sector-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-bottom:16px;}
+.sector-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;}
+.sector-card.up{border-top:3px solid var(--up);}.sector-card.down{border-top:3px solid var(--down);}
+.sector-name{font-size:13px;color:var(--text);margin-bottom:6px;font-weight:700;}
+.sector-change{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;}
+.theme-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:16px;}
+.theme-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;}
+.theme-card.up{border-left:3px solid var(--up);}.theme-card.down{border-left:3px solid var(--down);}
+.theme-name{font-size:12px;color:var(--dim);margin-bottom:4px;}
+.theme-price{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;margin-bottom:4px;}
+.theme-change{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;}
+.investor-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.investor-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;}
+.investor-title{font-size:13px;font-weight:700;margin-bottom:12px;}
+.investor-card ul{list-style:none;}
+.investor-card li{padding:4px 0;font-size:13px;border-bottom:1px solid var(--border);}
+.investor-card li.buy{color:var(--up);}.investor-card li.sell{color:var(--down);}
 .report{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px;line-height:1.8;}
 .report h3{font-size:16px;font-weight:700;color:var(--accent);margin:20px 0 8px;}
 .report li{margin-left:20px;margin-bottom:4px;color:#cbd5e1;}
 .report strong{color:#fff;}.report p{margin-bottom:12px;color:#cbd5e1;}
 .disc{margin-top:32px;padding:16px;border-radius:8px;background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.2);font-size:12px;color:var(--dim);}
 footer{text-align:center;padding:32px;font-size:12px;color:var(--dim);border-top:1px solid var(--border);margin-top:60px;}
-@media(max-width:600px){.idx{grid-template-columns:1fr;}header{padding:16px 20px;}.wrap{padding:24px 16px;}.report{padding:24px;}}
+@media(max-width:600px){.idx,.investor-grid{grid-template-columns:1fr;}header{padding:16px 20px;}.wrap{padding:24px 16px;}.report{padding:24px;}}
 </style>
 </head>
 <body>
 <header>
 <div class="logo">KR<span>Market</span>AI</div>
-<div class="ts">updated: 20260523 10:25 KST</div>
+<div class="ts">updated: 20260523 10:52 KST</div>
 </header>
 <div class="wrap">
 <div class="data-date">📅 2026년 05월 22일 기준 데이터</div>
+
 <div class="idx">
 <div class="idx-card">
 <div class="idx-label">KOSPI</div>
@@ -55,41 +73,80 @@ footer{text-align:center;padding:32px;font-size:12px;color:var(--dim);border-top
 <div class="idx-chg up">▲ 4.99%</div>
 </div>
 </div>
-<div class="sec">주요 종목</div>
-<div class="grid"><div class="stock-card down"><div class="stock-name">삼성전자</div><div class="stock-price">₩292,500</div><div class="stock-change down">▼ 2.34%</div></div><div class="stock-card up"><div class="stock-name">SK하이닉스</div><div class="stock-price">₩1,941,000</div><div class="stock-change up">▲ 0.05%</div></div><div class="stock-card up"><div class="stock-name">NAVER</div><div class="stock-price">₩203,000</div><div class="stock-change up">▲ 1.75%</div></div><div class="stock-card up"><div class="stock-name">카카오</div><div class="stock-price">₩41,850</div><div class="stock-change up">▲ 0.12%</div></div><div class="stock-card down"><div class="stock-name">현대차</div><div class="stock-price">₩655,000</div><div class="stock-change down">▼ 1.65%</div></div><div class="stock-card down"><div class="stock-name">LG에너지솔루션</div><div class="stock-price">₩398,500</div><div class="stock-change down">▼ 0.62%</div></div><div class="stock-card up"><div class="stock-name">셀트리온</div><div class="stock-price">₩198,700</div><div class="stock-change up">▲ 4.80%</div></div><div class="stock-card up"><div class="stock-name">POSCO홀딩스</div><div class="stock-price">₩447,500</div><div class="stock-change up">▲ 0.90%</div></div><div class="stock-card down"><div class="stock-name">기아</div><div class="stock-price">₩164,800</div><div class="stock-change down">▼ 1.85%</div></div><div class="stock-card up"><div class="stock-name">KB금융</div><div class="stock-price">₩160,000</div><div class="stock-change up">▲ 2.70%</div></div></div>
-<div class="sec">AI 분석 리포트</div>
+
+<div class="sec">📊 섹터별 등락률</div>
+<div class="sector-grid"><div class="sector-card up"><div class="sector-name">2차전지</div><div class="sector-change up">▲ 4.02%</div></div><div class="sector-card up"><div class="sector-name">금융</div><div class="sector-change up">▲ 2.31%</div></div><div class="sector-card up"><div class="sector-name">로봇</div><div class="sector-change up">▲ 0.51%</div></div><div class="sector-card up"><div class="sector-name">반도체</div><div class="sector-change up">▲ 0.45%</div></div><div class="sector-card flat"><div class="sector-name">바이오</div><div class="sector-change flat">- 0.00%</div></div><div class="sector-card flat"><div class="sector-name">방산</div><div class="sector-change flat">- 0.00%</div></div><div class="sector-card down"><div class="sector-name">자동차</div><div class="sector-change down">▼ 0.35%</div></div></div>
+
+<div class="sec">🎯 테마별 대장주</div>
+<div class="theme-grid"><div class="theme-card up"><div class="theme-name">AI반도체</div><div class="theme-price">₩1,941,000</div><div class="theme-change up">▲ 0.05%</div></div><div class="theme-card down"><div class="theme-name">2차전지</div><div class="theme-price">₩398,500</div><div class="theme-change down">▼ 0.62%</div></div><div class="theme-card up"><div class="theme-name">바이오</div><div class="theme-price">₩198,700</div><div class="theme-change up">▲ 4.80%</div></div><div class="theme-card up"><div class="theme-name">방산</div><div class="theme-price">₩1,261,000</div><div class="theme-change up">▲ 1.04%</div></div><div class="theme-card up"><div class="theme-name">로봇</div><div class="theme-price">₩206,000</div><div class="theme-change up">▲ 5.37%</div></div></div>
+
+<div class="sec">💰 외국인/기관 매매 동향</div>
+<div class="investor-grid">
+<div class="investor-card">
+<div class="investor-title" style="color:var(--up)">🔺 외국인 순매수 TOP5</div>
+<ul><li style="color:var(--dim)">데이터 없음</li></ul>
+</div>
+<div class="investor-card">
+<div class="investor-title" style="color:var(--down)">🔻 외국인 순매도 TOP5</div>
+<ul><li style="color:var(--dim)">데이터 없음</li></ul>
+</div>
+<div class="investor-card">
+<div class="investor-title" style="color:var(--up)">🔺 기관 순매수 TOP5</div>
+<ul><li style="color:var(--dim)">데이터 없음</li></ul>
+</div>
+<div class="investor-card">
+<div class="investor-title" style="color:var(--down)">🔻 기관 순매도 TOP5</div>
+<ul><li style="color:var(--dim)">데이터 없음</li></ul>
+</div>
+</div>
+
+<div class="sec">🤖 AI 종합 분석 리포트</div>
 <div class="report">
-<p># 🔍 2026년 05월 22일 한국 증시 분석 리포트</p><p><h2>1. 오늘의 시장 요약</h2>
-코스피는 7,847.71로 전일 대비 0.41% 상승하며 소폭 상승 마감했으나, 코스닥은 1,161.13으로 4.99% 급등하며 강세를 보였습니다. 대형주는 혼조세를 보인 반면, 중소형주 중심의 코스닥 시장에서 강한 매수세가 유입되며 시장 전반의 위험선호 심리가 개선된 것으로 판단됩니다.</p><p><h2>2. 주요 지표 해석</h2>
-<li><strong>시장 상황</strong>: 코스닥의 5% 가까운 급등은 중소형 성장주에 대한 투자 심리 개선을 시사</li>
-<li><strong>섹터 차별화</strong>: IT(네이버 1.75% 상승), 바이오(셀트리온 4.8% 급등), 금융(KB금융 2.7% 상승) 강세</li>
-<li><strong>약세 섹터</strong>: 자동차(현대차 -1.65%, 기아 -1.85%), 반도체(삼성전자 -2.34%) 부진</li>
-<li><strong>시장 심리</strong>: 성장주 중심의 자금 이동과 업종 로테이션 진행 중</li></p><p><h2>3. 투자 전략</h2>
-<strong>단기 전략</strong>: 코스닥 급등에 따른 중소형 성장주 관심 증대, 하지만 과도한 추격 매수는 지양
-<strong>중기 전략</strong>: 바이오헬스케어, 핀테크, 신재생에너지 등 성장 테마주 선별 투자
-<strong>리스크 관리</strong>: 대형주 약세가 지속될 경우를 대비한 포트폴리오 분산 필요</p><p><h2>4. 추천 종목 3개</h2></p><p><h3>🟢 셀트리온 (068270)</h3>
-<li><strong>선정 이유</strong>: 4.8% 급등으로 바이오 섹터 강세 주도, 글로벌 바이오시밀러 시장 확대 수혜</li>
-<li><strong>진입가</strong>: 195,000원 (현재가 대비 -1.9%)</li>
-<li><strong>목표가</strong>: 220,000원 (+10.7%)</li>
-<li><strong>손절가</strong>: 185,000원 (-6.9%)</li></p><p><h3>🟢 KB금융 (105560)</h3>
-<li><strong>선정 이유</strong>: 2.7% 상승으로 금융주 강세, 금리 안정화 수혜 및 배당 매력</li>
-<li><strong>진입가</strong>: 157,000원 (현재가 대비 -1.9%)</li>
-<li><strong>목표가</strong>: 175,000원 (+9.4%)</li>
-<li><strong>손절가</strong>: 148,000원 (-7.5%)</li></p><p><h3>🟢 NAVER (035420)</h3>
-<li><strong>선정 이유</strong>: 1.75% 상승으로 IT 섹터 회복세, AI 사업 확장 및 클라우드 성장 기대</li>
-<li><strong>진입가</strong>: 200,000원 (현재가 대비 -1.5%)</li>
-<li><strong>목표가</strong>: 230,000원 (+13.3%)</li>
-<li><strong>손절가</strong>: 188,000원 (-7.4%)</li></p><p><h2>5. 주의 종목</h2></p><p><h3>⚠️ 삼성전자 (005930)</h3>
--2.34% 하락으로 반도체 업황 우려와 대형주 약세 지속, 추가 조정 가능성</p><p><h3>⚠️ 현대차 (005380)</h3>
--1.65% 하락으로 자동차 섹터 전반 부진, 전기차 경쟁 심화 우려</p><p><h3>⚠️ 기아 (000270)</h3>
--1.85% 하락으로 현대차그룹 전체 약세, 단기 반등 어려울 전망</p><p><h2>6. 다음 거래일 관전 포인트</h2></p><p>1. <strong>코스닥 상승 지속성</strong>: 5% 급등 이후 조정 없이 상승세가 이어질지 여부
-2. <strong>대형주 반등 신호</strong>: 삼성전자, 현대차 등 주요 대형주의 저점 매수세 유입 여부
-3. <strong>외국인 투자자 동향</strong>: 코스닥 급등에 대한 외국인의 반응과 매매 방향
-4. <strong>섹터 로테이션</strong>: IT, 바이오, 금융 중심의 강세가 다른 업종으로 확산될지 모니터링
-5. <strong>거래량 변화</strong>: 코스닥 거래 증가세의 지속성과 시장 참여도 확인</p><p><strong>투자 시 유의사항</strong>: 본 분석은 투자 참고용이며, 개인의 투자 성향과 리스크 허용도를 고려하여 신중한 투자 결정을 내리시기 바랍니다.</p>
+<p># 한국 주식시장 투자 가이드 (2026년 05월 22일)</p><p><h2>1. 오늘의 시장 요약</h2></p><p>오늘 한국 주식시장은 <strong>코스닥 강세장</strong>을 보였습니다. KOSPI는 7,847.71로 0.41% 소폭 상승에 그쳤으나, KOSDAQ은 1,161.13으로 4.99%의 강력한 상승세를 기록했습니다. 이는 성장주와 중소형주에 대한 투자 심리가 크게 개선되었음을 시사합니다.</p><p>시가총액 상위 종목들은 혼조세를 보였으며, 특히 <strong>바이오 및 2차전지 섹터</strong>에서 강한 자금 유입이 관찰되었습니다. 삼성전자(-2.34%)와 현대차(-1.65%) 등 대형주 일부가 조정을 받으면서 개별 종목 선택의 중요성이 부각되는 장세였습니다.</p><p><h2>2. 섹터별 분석</h2></p><p><h3>🔥 강세 섹터</h3>
+<li><strong>2차전지 (+4.02%)</strong>: 글로벌 전기차 시장 확대와 배터리 기술 발전 기대감</li>
+<li><strong>금융 (+2.31%)</strong>: 금리 안정화 기대감과 실적 개선 전망</li>
+<li><strong>로봇 (+0.51%)</strong>: AI 융합 자동화 솔루션 수요 증가</li></p><p><h3>📉 약세 섹터</h3>
+<li><strong>자동차 (-0.35%)</strong>: 전통 내연기관 업체들의 전환 비용 부담</li>
+<li><strong>바이오 (0.00%)</strong>: 신약 개발 불확실성과 규제 리스크</li></p><p><h2>3. 테마별 분석</h2></p><p><h3>주도 테마</h3>
+1. <strong>로봇 테마</strong>: 대장주 5.37% 급등으로 AI 로봇 관련주들이 강세
+2. <strong>바이오 테마</strong>: 대장주(셀트리온) 4.8% 상승으로 제약바이오 부활 신호
+3. <strong>방산 테마</strong>: 지정학적 리스크 지속으로 1.04% 안정적 상승</p><p><h3>소외 테마</h3>
+<li><strong>AI반도체</strong>: SK하이닉스 0.05% 소폭 상승으로 모멘텀 일시 정체</li>
+<li><strong>2차전지</strong>: LG에너지솔루션 -0.62% 하락으로 개별 종목 차별화 심화</li></p><p><h2>4. 외국인/기관 매매 동향 분석</h2></p><p>매매 동향 데이터가 제공되지 않아 상세 분석이 제한적이나, KOSDAQ의 강한 상승세를 볼 때 <strong>중소형 성장주에 대한 관심이 집중</strong>되고 있는 것으로 판단됩니다. 향후 외국인 자금 유입 여부가 시장 지속성의 핵심 변수가 될 것입니다.</p><p><h2>5. 투자 전략</h2></p><p><h3>단기 전략 (1-2주)</h3>
+<li><strong>성장주 위주 포트폴리오</strong> 구성</li>
+<li>코스닥 상장 중소형주 중 실적 개선 종목 발굴</li>
+<li>2차전지, 로봇, 바이오 테마주 선별 투자</li></p><p><h3>중기 전략 (1-3개월)</h3>
+<li>대형주 조정 시 우량주 매수 기회 포착</li>
+<li>AI 융합 산업 관련 기술주 중장기 보유</li>
+<li>금융주 배당 투자 병행으로 포트폴리오 안정성 확보</li></p><p><h2>6. 추천 종목 3개</h2></p><p><h3>1️⃣ 셀트리온 (바이오 대장주)</h3>
+<li><strong>이유</strong>: 4.8% 급등으로 바이오 섹터 리딩, 글로벌 바이오시밀러 시장 확대</li>
+<li><strong>진입가</strong>: 198,000원 이하</li>
+<li><strong>목표가</strong>: 220,000원 (+11%)</li>
+<li><strong>손절가</strong>: 185,000원 (-6.5%)</li></p><p><h3>2️⃣ KB금융 (금융 대표주)</h3>
+<li><strong>이유</strong>: 2.7% 상승, 금리 안정화로 순이자마진 개선 기대</li>
+<li><strong>진입가</strong>: 159,000원 이하</li>
+<li><strong>목표가</strong>: 175,000원 (+10%)</li>
+<li><strong>손절가</strong>: 150,000원 (-5.6%)</li></p><p><h3>3️⃣ NAVER (플랫폼 대장주)</h3>
+<li><strong>이유</strong>: 1.75% 상승, AI 서비스 확장과 클라우드 사업 성장</li>
+<li><strong>진입가</strong>: 202,000원 이하</li>
+<li><strong>목표가</strong>: 225,000원 (+11.4%)</li>
+<li><strong>손절가</strong>: 190,000원 (-5.9%)</li></p><p><h2>7. 주의 종목</h2></p><p><h3>⚠️ 삼성전자</h3>
+<li>-2.34% 하락으로 메모리 업황 둔화 우려 지속</li>
+<li>단기 추가 조정 가능성, 260,000원 지지선 주목</li></p><p><h3>⚠️ 현대차/기아</h3>
+<li>각각 -1.65%, -1.85% 하락</li>
+<li>전기차 전환 비용과 중국 시장 부진 영향</li></p><p><h2>8. 다음 거래일 관전 포인트</h2></p><p>1. <strong>KOSDAQ 상승 지속성</strong>: 1,200선 돌파 여부가 중요한 기술적 분기점
+2. <strong>미국 증시 영향</strong>: 나스닥 기술주 동향이 국내 성장주에 미칠 파급효과
+3. <strong>환율 변동</strong>: 원/달러 환율이 수출주 실적에 미칠 영향 모니터링
+4. <strong>2차전지 ETF</strong>: 추가 상승 시 관련 개별 종목들의 연동성 확인
+5. <strong>외국인 매매 동향</strong>: 성장주 매수세 지속 여부가 시장 방향성 결정</p><p><strong>투자 시 반드시 개인의 투자 성향과 리스크 허용도를 고려하시고, 분산투자를 통해 위험을 관리하시기 바랍니다.</strong></p>
 <div class="disc">면책고지: 이 분석은 Claude AI가 생성한 참고 정보입니다. 투자 결정의 최종 책임은 투자자 본인에게 있습니다.</div>
 </div>
 </div>
-<footer>KRMarketAI · Powered by Claude AI · Data: Yahoo Finance</footer>
+
+<div class="sec">주요 종목</div>
+<div class="grid"><div class="stock-card down"><div class="stock-name">삼성전자</div><div class="stock-price">₩292,500</div><div class="stock-change down">▼ 2.34%</div></div><div class="stock-card up"><div class="stock-name">SK하이닉스</div><div class="stock-price">₩1,941,000</div><div class="stock-change up">▲ 0.05%</div></div><div class="stock-card up"><div class="stock-name">NAVER</div><div class="stock-price">₩203,000</div><div class="stock-change up">▲ 1.75%</div></div><div class="stock-card up"><div class="stock-name">카카오</div><div class="stock-price">₩41,850</div><div class="stock-change up">▲ 0.12%</div></div><div class="stock-card down"><div class="stock-name">현대차</div><div class="stock-price">₩655,000</div><div class="stock-change down">▼ 1.65%</div></div><div class="stock-card down"><div class="stock-name">LG에너지솔루션</div><div class="stock-price">₩398,500</div><div class="stock-change down">▼ 0.62%</div></div><div class="stock-card up"><div class="stock-name">셀트리온</div><div class="stock-price">₩198,700</div><div class="stock-change up">▲ 4.80%</div></div><div class="stock-card up"><div class="stock-name">POSCO홀딩스</div><div class="stock-price">₩447,500</div><div class="stock-change up">▲ 0.90%</div></div><div class="stock-card down"><div class="stock-name">기아</div><div class="stock-price">₩164,800</div><div class="stock-change down">▼ 1.85%</div></div><div class="stock-card up"><div class="stock-name">KB금융</div><div class="stock-price">₩160,000</div><div class="stock-change up">▲ 2.70%</div></div></div>
+
+<footer>KRMarketAI · Powered by Claude AI · Data: Yahoo Finance / KRX</footer>
+</div>
 </body>
 </html>
