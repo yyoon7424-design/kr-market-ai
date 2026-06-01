@@ -1,4 +1,4 @@
-import os
+    import os
 import json
 import datetime
 import requests
@@ -26,16 +26,16 @@ SECTOR_TICKERS = {
     "바이오": "207490.KS",
     "금융": "139270.KS",
     "2차전지": "305720.KS",
-    "방산": "1570.KS",
+    "방산": "229200.KS",
     "로봇": "411060.KS",
 }
 
 THEME_TICKERS = {
-    "AI반도체_대장": "000660.KS",
-    "2차전지_대장": "373220.KS",
-    "바이오_대장": "068270.KS",
-    "방산_대장": "012450.KS",
-    "로봇_대장": "064350.KS",
+    "AI반도체": "000660.KS",
+    "2차전지": "373220.KS",
+    "바이오": "068270.KS",
+    "방산": "012450.KS",
+    "로봇": "064350.KS",
 }
 
 def get_last_trading_date():
@@ -82,64 +82,14 @@ def fetch_yahoo(ticker, trading_date):
         print(f"오류 {ticker}: {e}")
         return {"price": 0, "change_pct": 0}
 
-def fetch_krx_foreign_institution(trading_date):
-    url = "http://data.krx.co.kr/comm/bldAttendant/getJsonData.cmd"
-    headers = {
-        "User-Agent": "Mozilla/5.0",
-        "Referer": "http://data.krx.co.kr",
-        "Content-Type": "application/x-www-form-urlencoded",
-    }
-    result = {"외국인_순매수": [], "기관_순매수": [], "외국인_순매도": [], "기관_순매도": []}
-    try:
-        r = requests.post(url, headers=headers, timeout=15, data={
-            "bld": "dbms/MDC/STAT/standard/MDCSTAT02401",
-            "locale": "ko_KR",
-            "mktId": "STK",
-            "trdDd": trading_date,
-            "invstTpCd": "4000",
-            "share": "1",
-            "money": "1",
-            "csvxls_isNo": "false",
-        })
-        items = r.json().get("output", [])
-        buy = [(i.get("ISU_ABBRV", ""), int(i.get("NETBUY_TRDVAL", "0").replace(",", "").replace("-", "0") or 0)) for i in items if i.get("NETBUY_TRDVAL", "").startswith("-") is False and i.get("NETBUY_TRDVAL", "0") != "0"]
-        sell = [(i.get("ISU_ABBRV", ""), abs(int(i.get("NETBUY_TRDVAL", "0").replace(",", "") or 0))) for i in items if i.get("NETBUY_TRDVAL", "").startswith("-")]
-        buy.sort(key=lambda x: x[1], reverse=True)
-        sell.sort(key=lambda x: x[1], reverse=True)
-        result["외국인_순매수"] = [x[0] for x in buy[:5]]
-        result["외국인_순매도"] = [x[0] for x in sell[:5]]
-    except Exception as e:
-        print(f"외국인 데이터 오류: {e}")
-    try:
-        r = requests.post(url, headers=headers, timeout=15, data={
-            "bld": "dbms/MDC/STAT/standard/MDCSTAT02401",
-            "locale": "ko_KR",
-            "mktId": "STK",
-            "trdDd": trading_date,
-            "invstTpCd": "2000",
-            "share": "1",
-            "money": "1",
-            "csvxls_isNo": "false",
-        })
-        items = r.json().get("output", [])
-        buy = [(i.get("ISU_ABBRV", ""), int(i.get("NETBUY_TRDVAL", "0").replace(",", "").replace("-", "0") or 0)) for i in items if not i.get("NETBUY_TRDVAL", "").startswith("-") and i.get("NETBUY_TRDVAL", "0") != "0"]
-        sell = [(i.get("ISU_ABBRV", ""), abs(int(i.get("NETBUY_TRDVAL", "0").replace(",", "") or 0))) for i in items if i.get("NETBUY_TRDVAL", "").startswith("-")]
-        buy.sort(key=lambda x: x[1], reverse=True)
-        sell.sort(key=lambda x: x[1], reverse=True)
-        result["기관_순매수"] = [x[0] for x in buy[:5]]
-        result["기관_순매도"] = [x[0] for x in sell[:5]]
-    except Exception as e:
-        print(f"기관 데이터 오류: {e}")
-    return result
-
 def collect_market_data():
     trading_date, date_label = get_last_trading_date()
     print(f"기준 거래일: {trading_date}")
 
-    results = {}
+    market = {}
     for name, ticker in YAHOO_TICKERS.items():
-        results[name] = fetch_yahoo(ticker, trading_date)
-        print(f"  {name}: {results[name]}")
+        market[name] = fetch_yahoo(ticker, trading_date)
+        print(f"  {name}: {market[name]}")
 
     sectors = {}
     for name, ticker in SECTOR_TICKERS.items():
@@ -151,39 +101,30 @@ def collect_market_data():
         themes[name] = fetch_yahoo(ticker, trading_date)
         print(f"  테마 {name}: {themes[name]}")
 
-    print("외국인/기관 매매 수집 중...")
-    investor = fetch_krx_foreign_institution(trading_date)
-    print(f"  외국인 순매수: {investor['외국인_순매수']}")
-    print(f"  기관 순매수: {investor['기관_순매수']}")
+    return market, sectors, themes, date_label
 
-    return results, sectors, themes, investor, date_label
+def call_claude(market, sectors, themes, date_label):
+    sector_text = ", ".join([f"{k}: {v['change_pct']:+.2f}%" for k, v in sectors.items()])
+    theme_text = ", ".join([f"{k}: {v['change_pct']:+.2f}% (₩{v['price']:,.0f})" for k, v in themes.items()])
 
-def call_claude(market_data, sectors, themes, investor, date_label):
     prompt = f"""당신은 한국 주식시장 전문 애널리스트입니다.
-아래 {date_label} 기준 데이터를 종합 분석해 투자 가이드를 작성해주세요.
+{date_label} 한국 증시 데이터를 분석해 투자 가이드를 작성해주세요.
 
-## 주요 지수 및 종목 데이터
-{json.dumps(market_data, ensure_ascii=False)}
+주요지수: KOSPI {market['KOSPI']['price']:,.2f} ({market['KOSPI']['change_pct']:+.2f}%), KOSDAQ {market['KOSDAQ']['price']:,.2f} ({market['KOSDAQ']['change_pct']:+.2f}%)
 
-## 섹터별 ETF 등락률
-{json.dumps(sectors, ensure_ascii=False)}
+섹터별 등락률: {sector_text}
 
-## 테마별 대장주 흐름
-{json.dumps(themes, ensure_ascii=False)}
+테마별 대장주: {theme_text}
 
-## 외국인/기관 매매 동향
-{json.dumps(investor, ensure_ascii=False)}
+주요종목: {', '.join([f"{k} {v['change_pct']:+.2f}%" for k, v in market.items() if k not in ('KOSPI','KOSDAQ')])}
 
-다음 구조로 한국어로 상세하게 작성하세요:
-
+다음 구조로 한국어로 작성하세요:
 ### 1. 오늘의 시장 요약
-### 2. 섹터별 분석 (강세/약세 섹터, 이유 포함)
-### 3. 테마별 분석 (주도 테마, 소외 테마)
-### 4. 외국인/기관 매매 동향 분석
-### 5. 투자 전략 (단기/중기)
-### 6. 추천 종목 3개 (종목명, 이유, 진입가, 목표가, 손절가)
-### 7. 주의 종목
-### 8. 다음 거래일 관전 포인트"""
+### 2. 섹터/테마 분석 (강세/약세 섹터, 주도 테마)
+### 3. 투자 전략 (단기/중기)
+### 4. 추천 종목 3개 (종목명, 이유, 진입가, 목표가, 손절가)
+### 5. 주의 종목
+### 6. 다음 거래일 관전 포인트"""
 
     headers = {
         "x-api-key": ANTHROPIC_API_KEY,
@@ -192,17 +133,21 @@ def call_claude(market_data, sectors, themes, investor, date_label):
     }
     body = {
         "model": "claude-sonnet-4-20250514",
-        "max_tokens": 3000,
+        "max_tokens": 2000,
         "messages": [{"role": "user", "content": prompt}],
     }
     r = requests.post("https://api.anthropic.com/v1/messages", headers=headers, json=body, timeout=60)
-    return r.json()["content"][0]["text"]
+    resp = r.json()
+    if "content" not in resp:
+        print(f"API 오류: {resp}")
+        return "분석 데이터를 불러오는 중 오류가 발생했습니다."
+    return resp["content"][0]["text"]
 
-def build_html(market_data, sectors, themes, investor, analysis, date_label):
+def build_html(market, sectors, themes, analysis, date_label):
     kst_now = datetime.datetime.utcnow() + datetime.timedelta(hours=9)
     updated_str = kst_now.strftime("%Y%m%d %H:%M KST")
-    kospi = market_data.get("KOSPI", {})
-    kosdaq = market_data.get("KOSDAQ", {})
+    kospi = market.get("KOSPI", {})
+    kosdaq = market.get("KOSDAQ", {})
 
     def cc(v):
         if isinstance(v, (int, float)):
@@ -215,14 +160,14 @@ def build_html(market_data, sectors, themes, investor, analysis, date_label):
         return "-"
 
     stock_cards = ""
-    for name, d in market_data.items():
+    for name, d in market.items():
         if name in ("KOSPI", "KOSDAQ"):
             continue
         cp = d.get("change_pct", 0)
         stock_cards += f'<div class="stock-card {cc(cp)}"><div class="stock-name">{name}</div><div class="stock-price">₩{d.get("price", 0):,.0f}</div><div class="stock-change {cc(cp)}">{ca(cp)} {abs(cp):.2f}%</div></div>'
 
-    sector_cards = ""
     sorted_sectors = sorted(sectors.items(), key=lambda x: x[1].get("change_pct", 0), reverse=True)
+    sector_cards = ""
     for name, d in sorted_sectors:
         cp = d.get("change_pct", 0)
         sector_cards += f'<div class="sector-card {cc(cp)}"><div class="sector-name">{name}</div><div class="sector-change {cc(cp)}">{ca(cp)} {abs(cp):.2f}%</div></div>'
@@ -230,13 +175,7 @@ def build_html(market_data, sectors, themes, investor, analysis, date_label):
     theme_cards = ""
     for name, d in themes.items():
         cp = d.get("change_pct", 0)
-        label = name.replace("_대장", "").replace("_", " ")
-        theme_cards += f'<div class="theme-card {cc(cp)}"><div class="theme-name">{label}</div><div class="theme-price">₩{d.get("price", 0):,.0f}</div><div class="theme-change {cc(cp)}">{ca(cp)} {abs(cp):.2f}%</div></div>'
-
-    def make_investor_list(items, cls):
-        if not items:
-            return '<li style="color:var(--dim)">데이터 없음</li>'
-        return "".join([f'<li class="{cls}">{item}</li>' for item in items])
+        theme_cards += f'<div class="theme-card {cc(cp)}"><div class="theme-name">{name}</div><div class="theme-price">₩{d.get("price", 0):,.0f}</div><div class="theme-change {cc(cp)}">{ca(cp)} {abs(cp):.2f}%</div></div>'
 
     import re
     html_analysis = analysis
@@ -266,43 +205,37 @@ header{{border-bottom:1px solid var(--border);padding:24px 40px;display:flex;jus
 .ts{{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--dim);}}
 .wrap{{max-width:1200px;margin:0 auto;padding:40px 24px;}}
 .data-date{{text-align:center;color:var(--accent);font-size:14px;font-weight:700;margin-bottom:32px;padding:12px;background:var(--surface);border-radius:8px;border:1px solid var(--border);}}
-.idx{{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:40px;}}
+.idx{{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:8px;}}
 .idx-card{{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;}}
 .idx-label{{font-size:12px;color:var(--dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}}
 .idx-val{{font-family:'JetBrains Mono',monospace;font-size:36px;font-weight:700;margin-bottom:4px;}}
 .idx-chg{{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;}}
 .up{{color:var(--up);}}.down{{color:var(--down);}}.flat{{color:var(--flat);}}
-.sec{{font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border);margin-top:40px;}}
-.grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:16px;}}
+.sec{{font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin:32px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--border);}}
+.grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px;}}
 .stock-card{{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;}}
 .stock-card.up{{border-left:3px solid var(--up);}}.stock-card.down{{border-left:3px solid var(--down);}}
 .stock-name{{font-size:13px;color:var(--dim);margin-bottom:6px;}}
 .stock-price{{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;margin-bottom:4px;}}
 .stock-change{{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;}}
-.sector-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-bottom:16px;}}
+.sector-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;}}
 .sector-card{{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;}}
 .sector-card.up{{border-top:3px solid var(--up);}}.sector-card.down{{border-top:3px solid var(--down);}}
 .sector-name{{font-size:13px;color:var(--text);margin-bottom:6px;font-weight:700;}}
 .sector-change{{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;}}
-.theme-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:16px;}}
+.theme-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;}}
 .theme-card{{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;}}
 .theme-card.up{{border-left:3px solid var(--up);}}.theme-card.down{{border-left:3px solid var(--down);}}
-.theme-name{{font-size:12px;color:var(--dim);margin-bottom:4px;}}
+.theme-name{{font-size:12px;color:var(--dim);margin-bottom:4px;font-weight:700;}}
 .theme-price{{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;margin-bottom:4px;}}
 .theme-change{{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;}}
-.investor-grid{{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}}
-.investor-card{{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;}}
-.investor-title{{font-size:13px;font-weight:700;margin-bottom:12px;}}
-.investor-card ul{{list-style:none;}}
-.investor-card li{{padding:4px 0;font-size:13px;border-bottom:1px solid var(--border);}}
-.investor-card li.buy{{color:var(--up);}}.investor-card li.sell{{color:var(--down);}}
 .report{{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px;line-height:1.8;}}
 .report h3{{font-size:16px;font-weight:700;color:var(--accent);margin:20px 0 8px;}}
 .report li{{margin-left:20px;margin-bottom:4px;color:#cbd5e1;}}
 .report strong{{color:#fff;}}.report p{{margin-bottom:12px;color:#cbd5e1;}}
 .disc{{margin-top:32px;padding:16px;border-radius:8px;background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.2);font-size:12px;color:var(--dim);}}
 footer{{text-align:center;padding:32px;font-size:12px;color:var(--dim);border-top:1px solid var(--border);margin-top:60px;}}
-@media(max-width:600px){{.idx,.investor-grid{{grid-template-columns:1fr;}}header{{padding:16px 20px;}}.wrap{{padding:24px 16px;}}.report{{padding:24px;}}}}
+@media(max-width:600px){{.idx{{grid-template-columns:1fr;}}header{{padding:16px 20px;}}.wrap{{padding:24px 16px;}}.report{{padding:24px;}}}}
 </style>
 </head>
 <body>
@@ -312,7 +245,6 @@ footer{{text-align:center;padding:32px;font-size:12px;color:var(--dim);border-to
 </header>
 <div class="wrap">
 <div class="data-date">📅 {date_label} 기준 데이터</div>
-
 <div class="idx">
 <div class="idx-card">
 <div class="idx-label">KOSPI</div>
@@ -325,52 +257,26 @@ footer{{text-align:center;padding:32px;font-size:12px;color:var(--dim);border-to
 <div class="idx-chg {cc(kq)}">{ca(kq)} {abs(kq):.2f}%</div>
 </div>
 </div>
-
 <div class="sec">📊 섹터별 등락률</div>
 <div class="sector-grid">{sector_cards}</div>
-
 <div class="sec">🎯 테마별 대장주</div>
 <div class="theme-grid">{theme_cards}</div>
-
-<div class="sec">💰 외국인/기관 매매 동향</div>
-<div class="investor-grid">
-<div class="investor-card">
-<div class="investor-title" style="color:var(--up)">🔺 외국인 순매수 TOP5</div>
-<ul>{make_investor_list(investor.get("외국인_순매수", []), "buy")}</ul>
-</div>
-<div class="investor-card">
-<div class="investor-title" style="color:var(--down)">🔻 외국인 순매도 TOP5</div>
-<ul>{make_investor_list(investor.get("외국인_순매도", []), "sell")}</ul>
-</div>
-<div class="investor-card">
-<div class="investor-title" style="color:var(--up)">🔺 기관 순매수 TOP5</div>
-<ul>{make_investor_list(investor.get("기관_순매수", []), "buy")}</ul>
-</div>
-<div class="investor-card">
-<div class="investor-title" style="color:var(--down)">🔻 기관 순매도 TOP5</div>
-<ul>{make_investor_list(investor.get("기관_순매도", []), "sell")}</ul>
-</div>
-</div>
-
+<div class="sec">📈 주요 종목</div>
+<div class="grid">{stock_cards}</div>
 <div class="sec">🤖 AI 종합 분석 리포트</div>
 <div class="report">
 {html_analysis}
 <div class="disc">면책고지: 이 분석은 Claude AI가 생성한 참고 정보입니다. 투자 결정의 최종 책임은 투자자 본인에게 있습니다.</div>
 </div>
 </div>
-
-<div class="sec">주요 종목</div>
-<div class="grid">{stock_cards}</div>
-
-<footer>KRMarketAI · Powered by Claude AI · Data: Yahoo Finance / KRX</footer>
-</div>
+<footer>KRMarketAI · Powered by Claude AI · Data: Yahoo Finance</footer>
 </body>
 </html>"""
 
 def main():
-    market_data, sectors, themes, investor, date_label = collect_market_data()
-    analysis = call_claude(market_data, sectors, themes, investor, date_label)
-    html = build_html(market_data, sectors, themes, investor, analysis, date_label)
+    market, sectors, themes, date_label = collect_market_data()
+    analysis = call_claude(market, sectors, themes, date_label)
+    html = build_html(market, sectors, themes, analysis, date_label)
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(html)
     print("Done!")
