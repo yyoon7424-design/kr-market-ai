@@ -41,12 +41,13 @@ THEME_TICKERS = {
 def get_last_trading_date():
     kst = datetime.datetime.utcnow() + datetime.timedelta(hours=9)
     weekday = kst.weekday()
+    # 토요일이면 금요일, 일요일이면 금요일
     if weekday == 5:
         kst -= datetime.timedelta(days=1)
     elif weekday == 6:
         kst -= datetime.timedelta(days=2)
-    # 장 마감 전(16시 이전)이면 전날 데이터 사용
-    if kst.hour < 16:
+    # 평일이면 무조건 전날 (당일 장 마감 여부 무관)
+    else:
         kst -= datetime.timedelta(days=1)
         # 전날이 주말이면 금요일로
         if kst.weekday() == 5:
@@ -71,32 +72,25 @@ def fetch_yahoo(ticker, trading_date):
             dt = datetime.datetime.utcfromtimestamp(ts) + datetime.timedelta(hours=9)
             dated.append((dt.strftime("%Y%m%d"), cl))
         dated.sort(key=lambda x: x[0])
-        print(f"    {ticker} 가용 날짜: {[d for d,_ in dated]}")
-        # 정확히 trading_date 찾기
+        # trading_date 이하의 가장 최근 날짜 찾기
         target_idx = None
-        for i, (d, _) in enumerate(dated):
-            if d == trading_date:
+        for i in range(len(dated)-1, -1, -1):
+            if dated[i][0] <= trading_date:
                 target_idx = i
                 break
-        # 없으면 trading_date 이전 가장 최근 날짜 사용
-        if target_idx is None:
-            for i in range(len(dated)-1, -1, -1):
-                if dated[i][0] <= trading_date:
-                    target_idx = i
-                    break
         if target_idx is not None and target_idx >= 1:
             current = dated[target_idx][1]
             prev = dated[target_idx - 1][1]
             change_pct = round((current - prev) / prev * 100, 2)
-            actual_date = dated[target_idx][0]
-            return {"price": round(current, 2), "change_pct": change_pct, "date": actual_date}
+            print(f"    {ticker}: {dated[target_idx][0]} 종가 {current:,.0f} ({change_pct:+.2f}%)")
+            return {"price": round(current, 2), "change_pct": change_pct}
         elif target_idx == 0 and dated:
-            return {"price": round(dated[0][1], 2), "change_pct": 0, "date": dated[0][0]}
+            return {"price": round(dated[0][1], 2), "change_pct": 0}
         else:
-            return {"price": 0, "change_pct": 0, "date": "N/A"}
+            return {"price": 0, "change_pct": 0}
     except Exception as e:
         print(f"오류 {ticker}: {e}")
-        return {"price": 0, "change_pct": 0, "date": "N/A"}
+        return {"price": 0, "change_pct": 0}
 
 def collect_market_data():
     trading_date, date_label = get_last_trading_date()
@@ -104,15 +98,12 @@ def collect_market_data():
     market = {}
     for name, ticker in YAHOO_TICKERS.items():
         market[name] = fetch_yahoo(ticker, trading_date)
-        print(f"  {name}: {market[name]}")
     sectors = {}
     for name, ticker in SECTOR_TICKERS.items():
         sectors[name] = fetch_yahoo(ticker, trading_date)
-        print(f"  섹터 {name}: {sectors[name]}")
     themes = {}
     for name, ticker in THEME_TICKERS.items():
         themes[name] = fetch_yahoo(ticker, trading_date)
-        print(f"  테마 {name}: {themes[name]}")
     return market, sectors, themes, date_label
 
 def call_claude(market, sectors, themes, date_label):
