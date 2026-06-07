@@ -103,81 +103,41 @@ def collect_market_data():
         themes[name] = fetch_yahoo(ticker, trading_date)
     return market, sectors, themes, date_label
 
-def call_claude(market, sectors, themes, date_label):
+def call_claude_with_search(market, sectors, themes, date_label):
     sector_text = ", ".join([f"{k}: {v['change_pct']:+.2f}%" for k, v in sectors.items()])
     theme_text = ", ".join([f"{k}: {v['change_pct']:+.2f}% (₩{v['price']:,.0f})" for k, v in themes.items()])
+
     prompt = f"""당신은 15년 경력의 한국 주식시장 전문 애널리스트입니다.
 
 [분석 원칙 - 반드시 준수]
-1. 절대로 결론만 말하지 마세요. 모든 현상은 "왜 그런가?" -> "그게 왜 그런가?" -> "근본 원인은 무엇인가?" 순으로 3단계 이상 파고드세요.
-2. 예를 들어 "AI 투자 버블 우려"라고 쓸 경우, 반드시 다음을 포함하세요:
-   - 버블 우려가 언제부터 왜 시작되었는지
-   - 어떤 구체적 지표나 사건이 촉발했는지
-   - 과거 유사 사례(닷컴버블 등)와의 비교
-   - 현재 상황이 실제 버블인지 아닌지에 대한 근거 있는 판단
-3. "실적 부진", "수요 둔화", "공급 과잉" 등의 표현을 쓸 때는 반드시 다음을 포함하세요:
-   - 어떤 기업/지표의 실적이 부진한지 (예: 엔비디아 2025년 3분기 매출 성장률 X% 둔화)
-   - 전년 동기 대비 또는 시장 예상치 대비 얼마나 부진한지 구체적 수치
-   - 그 부진이 일시적인지 구조적인지 판단과 근거
-4. 숫자나 통계를 인용할 때는 반드시 출처를 명시하세요. (예: "블룸버그에 따르면", "엔비디아 실적발표 기준", "IDC 보고서") 출처를 알 수 없는 수치는 절대 사용하지 말고, 대신 "시장에서는 ~로 추정된다" 또는 "~라는 우려가 있다"고 표현하세요.
-5. 숫자와 구체적 근거를 항상 포함하세요. 단, 확인되지 않은 수치를 사실처럼 제시하지 마세요.
-5. 초보자도 이해할 수 있도록 전문 용어는 괄호로 쉽게 설명하세요.
-6. 각 섹션은 최소 5줄 이상 작성하세요.
+1. 모든 현상은 "왜?" -> "그게 왜?" -> "근본 원인은?" 3단계 이상 파고드세요.
+2. 수치나 통계를 인용할 때는 반드시 web_search 툴로 검색해서 실제 출처를 확인하고 명시하세요. (예: "로이터 보도에 따르면", "블룸버그 집계 기준")
+3. "실적 부진", "수요 둔화" 등의 표현은 반드시 구체적 기업명, 수치, 출처와 함께 작성하세요.
+4. 확인되지 않은 수치는 절대 사실처럼 제시하지 말고 "~로 추정된다", "~우려가 있다"고 표현하세요.
+5. 초보자용 괄호 설명 포함, 각 섹션 최소 5줄 이상.
+
+먼저 web_search 툴을 사용해서 다음을 검색하세요:
+- "{date_label} 한국 증시 코스피"
+- "반도체 섹터 뉴스 오늘"
+- "삼성전자 SK하이닉스 최근 뉴스"
+
+검색 후 실제 뉴스를 근거로 아래 분석을 작성하세요:
 
 {date_label} 한국 증시 데이터:
-주요지수: KOSPI {market['KOSPI']['price']:,.2f} ({market['KOSPI']['change_pct']:+.2f}%), KOSDAQ {market['KOSDAQ']['price']:,.2f} ({market['KOSDAQ']['change_pct']:+.2f}%)
-섹터별 등락률: {sector_text}
-테마별 대장주: {theme_text}
-주요종목: {', '.join([f"{k} {v['change_pct']:+.2f}%" for k, v in market.items() if k not in ('KOSPI','KOSDAQ')])}
+KOSPI {market['KOSPI']['price']:,.2f} ({market['KOSPI']['change_pct']:+.2f}%), KOSDAQ {market['KOSDAQ']['price']:,.2f} ({market['KOSDAQ']['change_pct']:+.2f}%)
+섹터: {sector_text}
+테마: {theme_text}
+종목: {', '.join([f"{k} {v['change_pct']:+.2f}%" for k, v in market.items() if k not in ('KOSPI','KOSDAQ')])}
 
-### 1. 오늘 시장 핵심 요약
-오늘 시장의 전반적 흐름을 설명하되, 단순 수치 나열이 아닌 "왜 이런 결과가 나왔는지"를 거시경제 흐름, 글로벌 이슈, 수급 동향을 연결해 설명하세요. KOSPI/KOSDAQ 수치가 의미하는 바를 시가총액 변화로 환산해 체감할 수 있게 설명하세요.
-
-### 2. 섹터별 심층 분석
-각 섹터에 대해 다음을 반드시 포함하세요:
-- 오늘 등락의 표면적 원인
-- 그 원인이 발생한 배경 (글로벌 공급망, 금리, 환율, 정책 등)
-- 근본적인 구조적 원인
-- 이 섹터의 현재 사이클(성장기/정점/하락기/바닥) 판단과 근거
-
-### 3. 테마별 자금 흐름 심층 분석
-각 테마에 대해:
-- 자금이 들어오거나 빠진 구체적 이유
-- 해당 테마가 중장기적으로 유효한지, 아니면 단기 이슈인지 판단
-- 국내외 경쟁 구도와 해당 테마의 글로벌 포지션
-
+### 1. 오늘 시장 핵심 요약 (검색된 뉴스 기반)
+### 2. 섹터별 심층 분석 (실제 뉴스 출처 포함)
+### 3. 테마별 자금 흐름 분석
 ### 4. 리스크 요인 근본 분석
-각 리스크에 대해 단순 언급이 아닌, 그 리스크가 어디서 시작됐고 어떤 경로로 한국 시장에 영향을 미치는지 인과관계 체인을 설명하세요.
-- 미국 금리 정책: 현재 수준과 한국 시장에 미치는 영향 경로
-- 환율: 원/달러 환율 변동이 각 섹터에 미치는 차별적 영향
-- 지정학적 리스크: 구체적 시나리오와 영향
-
 ### 5. 투자 전략
-현재 시장 국면을 정의하고 (조정장/하락장/상승장/횡보장), 그에 맞는 전략을 제시하세요.
-- 단기(1주) 전략: 구체적 매매 타이밍과 가격대
-- 중기(1~3개월) 전략: 섹터 로테이션 관점
-- 리스크 관리: 포트폴리오 비중 조정 방법
-- 초보자가 가장 많이 하는 실수와 대처법
-
-### 6. 추천 종목 3개 (근거 기반)
-각 종목별로:
-- 왜 지금 이 종목인지: 기술적 분석(지지선/저항선/거래량) + 펀더멘털(PER, PBR, 영업이익 추이)
-- 해당 기업이 속한 산업의 글로벌 트렌드와 국내 경쟁력
-- 진입 가격대 / 1차 목표가 / 2차 목표가 / 손절가 (구체적 수치)
-- 투자 기간과 예상 수익률
-- 이 종목을 사면 안 되는 조건(리스크)
-
+### 6. 추천 종목 3개 (근거 + 출처 포함)
 ### 7. 주의/회피 종목
-단순 "조심하세요"가 아닌, 구체적으로 어떤 신호가 위험을 나타내는지 설명하세요.
-
-### 8. 초보자를 위한 오늘의 핵심 교훈
-오늘 시장에서 가장 중요한 투자 교훈 하나를 골라, 왜 그것이 중요한지 역사적 사례와 함께 설명하세요.
-
-### 9. 내일 시나리오 분석
-- 낙관 시나리오 (확률 X%): 어떤 조건이 충족되면 이 시나리오가 실현되는지
-- 중립 시나리오 (확률 X%): 가장 가능성 높은 시나리오
-- 비관 시나리오 (확률 X%): 어떤 트리거가 하락을 촉발할 수 있는지
-- 내일 반드시 확인해야 할 지표 3가지와 그 이유"""
+### 8. 초보자를 위한 오늘의 교훈
+### 9. 내일 시나리오 분석 (낙관/중립/비관 확률 포함)"""
 
     headers = {
         "x-api-key": ANTHROPIC_API_KEY,
@@ -187,14 +147,60 @@ def call_claude(market, sectors, themes, date_label):
     body = {
         "model": "claude-sonnet-4-20250514",
         "max_tokens": 4096,
+        "tools": [
+            {
+                "type": "web_search_20250305",
+                "name": "web_search"
+            }
+        ],
         "messages": [{"role": "user", "content": prompt}],
     }
-    r = requests.post("https://api.anthropic.com/v1/messages", headers=headers, json=body, timeout=90)
+
+    print("Claude API + 웹 검색 실행 중...")
+    r = requests.post("https://api.anthropic.com/v1/messages", headers=headers, json=body, timeout=120)
     resp = r.json()
+
     if "content" not in resp:
         print(f"API 오류: {resp}")
         return "분석 데이터를 불러오는 중 오류가 발생했습니다."
-    return resp["content"][0]["text"]
+
+    # 여러 content 블록에서 텍스트 추출
+    full_text = ""
+    for block in resp["content"]:
+        if block.get("type") == "text":
+            full_text += block.get("text", "")
+
+    # tool_use가 있으면 후속 메시지 처리
+    if any(block.get("type") == "tool_use" for block in resp["content"]):
+        print("웹 검색 결과 처리 중...")
+        messages = [
+            {"role": "user", "content": prompt},
+            {"role": "assistant", "content": resp["content"]},
+        ]
+        tool_results = []
+        for block in resp["content"]:
+            if block.get("type") == "tool_use":
+                tool_results.append({
+                    "type": "tool_result",
+                    "tool_use_id": block["id"],
+                    "content": block.get("input", {}).get("query", "검색 완료")
+                })
+        if tool_results:
+            messages.append({"role": "user", "content": tool_results})
+        body2 = {
+            "model": "claude-sonnet-4-20250514",
+            "max_tokens": 4096,
+            "tools": [{"type": "web_search_20250305", "name": "web_search"}],
+            "messages": messages,
+        }
+        r2 = requests.post("https://api.anthropic.com/v1/messages", headers=headers, json=body2, timeout=120)
+        resp2 = r2.json()
+        if "content" in resp2:
+            for block in resp2["content"]:
+                if block.get("type") == "text":
+                    full_text += block.get("text", "")
+
+    return full_text if full_text else "분석 데이터를 불러오는 중 오류가 발생했습니다."
 
 def make_sparkline(history, width=120, height=40):
     if len(history) < 2:
@@ -348,19 +354,19 @@ footer{{text-align:center;padding:28px;font-size:12px;color:var(--dim);border-to
 <div class="theme-grid">{theme_cards}</div>
 <div class="sec">📈 주요 종목</div>
 <div class="grid">{stock_cards}</div>
-<div class="sec">🤖 AI 심층 분석 리포트</div>
+<div class="sec">🤖 AI 심층 분석 리포트 (실시간 뉴스 기반)</div>
 <div class="report">
 {html_analysis}
-<div class="disc">⚠️ 면책고지: 이 분석은 Claude AI가 생성한 참고 정보입니다. 투자 결정의 최종 책임은 투자자 본인에게 있으며, 본 리포트는 투자 권유가 아닙니다.</div>
+<div class="disc">⚠️ 면책고지: 이 분석은 Claude AI가 실시간 뉴스 검색을 통해 생성한 참고 정보입니다. 투자 결정의 최종 책임은 투자자 본인에게 있으며, 본 리포트는 투자 권유가 아닙니다.</div>
 </div>
 </div>
-<footer>KRMarketAI · Powered by Claude AI · Data: Yahoo Finance</footer>
+<footer>KRMarketAI · Powered by Claude AI + 실시간 뉴스 검색 · Data: Yahoo Finance</footer>
 </body>
 </html>"""
 
 def main():
     market, sectors, themes, date_label = collect_market_data()
-    analysis = call_claude(market, sectors, themes, date_label)
+    analysis = call_claude_with_search(market, sectors, themes, date_label)
     html = build_html(market, sectors, themes, analysis, date_label)
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(html)
