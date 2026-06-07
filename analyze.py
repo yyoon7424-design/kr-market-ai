@@ -106,51 +106,64 @@ def collect_market_data():
 def call_claude(market, sectors, themes, date_label):
     sector_text = ", ".join([f"{k}: {v['change_pct']:+.2f}%" for k, v in sectors.items()])
     theme_text = ", ".join([f"{k}: {v['change_pct']:+.2f}% (₩{v['price']:,.0f})" for k, v in themes.items()])
-    prompt = f"""당신은 한국 주식시장 전문 애널리스트입니다. 주식 초보자도 이해할 수 있도록 쉽고 친절하게 설명해주세요.
-{date_label} 한국 증시 데이터를 분석해 상세한 투자 가이드를 작성해주세요.
+    prompt = f"""당신은 15년 경력의 한국 주식시장 전문 애널리스트입니다. 기관투자자 수준의 심층 분석을 제공하되, 주식 초보자도 이해할 수 있도록 전문 용어에는 괄호로 쉬운 설명을 덧붙여 주세요.
 
+{date_label} 한국 증시 데이터:
 주요지수: KOSPI {market['KOSPI']['price']:,.2f} ({market['KOSPI']['change_pct']:+.2f}%), KOSDAQ {market['KOSDAQ']['price']:,.2f} ({market['KOSDAQ']['change_pct']:+.2f}%)
 섹터별 등락률: {sector_text}
 테마별 대장주: {theme_text}
 주요종목: {', '.join([f"{k} {v['change_pct']:+.2f}%" for k, v in market.items() if k not in ('KOSPI','KOSDAQ')])}
 
-다음 구조로 한국어로 상세하게 작성하세요. 각 섹션을 충분히 자세하게 써주세요:
+다음 구조로 작성하세요. 각 섹션은 반드시 3줄 이상 상세하게 작성하세요:
 
 ### 1. 오늘 시장 한눈에 보기
-- KOSPI/KOSDAQ 흐름을 초보자도 이해할 수 있게 비유를 들어 설명
-- 오늘 시장 분위기 (예: "전반적으로 하락장, 반도체만 선방" 등)
-- 특히 주목할 만한 움직임
+- KOSPI/KOSDAQ 수치의 의미를 구체적으로 설명
+- 오늘 시장을 움직인 핵심 동인 3가지
+- 매수세와 매도세 중 어느 쪽이 우세했는지와 그 근거
 
-### 2. 섹터별 상세 분석
+### 2. 섹터별 심층 분석
 각 섹터별로:
-- 오늘 등락률과 그 이유 (초보자 설명 포함)
-- 해당 섹터에 영향을 준 뉴스/이벤트 추정
+- 정확한 등락률과 해당 섹터가 오른/내린 구체적 이유
+- 글로벌 매크로(거시경제) 환경과의 연관성
+- 해당 섹터의 단기 모멘텀 판단
 
-### 3. 오늘의 주도 테마와 소외 테마
-- 돈이 몰린 테마와 빠진 테마
-- 왜 그런지 쉽게 설명
+### 3. 테마별 자금 흐름 분석
+- 오늘 돈이 몰린 테마와 빠진 테마
+- 각 테마의 강세/약세 원인을 펀더멘털 관점에서 분석
+- 단순 수급인지 실질적 모멘텀인지 판단
 
-### 4. 투자 전략 (초보자용)
-- 지금 같은 시장에서 초보자가 취해야 할 자세
-- 단기(1주) / 중기(1~3개월) 전략
-- 절대 하지 말아야 할 것
+### 4. 리스크 요인 심층 분석
+- 국내 리스크: 환율, 외국인 매매 동향, 기관 수급
+- 글로벌 리스크: 미국 금리, 중국 경기, 지정학적 리스크
+- 각 리스크가 시장에 미치는 영향 정도 (상/중/하)
 
-### 5. 추천 종목 3개
+### 5. 투자 전략
+- 지금 시장 상황에서의 포지션 전략
+- 단기(1주) / 중기(1~3개월) 전략을 구체적 수치와 함께
+- 분산투자 관점에서의 섹터 배분 제안
+- 절대 하지 말아야 할 행동
+
+### 6. 추천 종목 3개
 각 종목별로:
-- 종목명과 왜 추천하는지 (쉬운 설명)
-- 지금 가격이 비싼지 싼지
-- 진입 가격대 / 목표가 / 손절가
-- 예상 수익률과 리스크
+- 추천 근거: 기술적 분석 + 펀더멘털 두 가지 관점
+- 현재 밸류에이션이 적정한지 판단
+- 진입 가격대 / 1차 목표가 / 2차 목표가 / 손절가
+- 예상 수익률과 투자 기간
+- 핵심 리스크 요인
 
-### 6. 주의/회피 종목
-- 지금 당장 사면 안 되는 종목과 이유
+### 7. 주의/회피 종목
+- 단기 매수 금지 종목과 구체적 이유
+- 기술적/펀더멘털 관점에서의 위험 신호
 
-### 7. 초보자를 위한 오늘의 핵심 교훈
-- 오늘 시장에서 배울 수 있는 투자 원칙 1가지
+### 8. 초보자를 위한 오늘의 투자 교훈
+- 오늘 시장에서 배울 수 있는 핵심 투자 원칙
+- 실수하기 쉬운 함정과 대처법
 
-### 8. 내일/다음 거래일 예측
-- 예상 시나리오 (낙관/중립/비관)
-- 주시해야 할 지표와 뉴스"""
+### 9. 내일 시나리오 분석
+- 낙관 시나리오 (확률 X%): 조건과 예상 지수
+- 중립 시나리오 (확률 X%): 조건과 예상 지수
+- 비관 시나리오 (확률 X%): 조건과 예상 지수
+- 내일 반드시 확인해야 할 지표와 뉴스"""
 
     headers = {
         "x-api-key": ANTHROPIC_API_KEY,
@@ -169,7 +182,7 @@ def call_claude(market, sectors, themes, date_label):
         return "분석 데이터를 불러오는 중 오류가 발생했습니다."
     return resp["content"][0]["text"]
 
-def make_sparkline(history, width=120, height=40, is_index=False):
+def make_sparkline(history, width=120, height=40):
     if len(history) < 2:
         return ""
     prices = [h[2] for h in history]
@@ -206,8 +219,8 @@ def build_html(market, sectors, themes, analysis, date_label):
     kp = kospi.get("change_pct", 0)
     kq = kosdaq.get("change_pct", 0)
 
-    kospi_spark = make_sparkline(kospi.get("history", []), width=200, height=60, is_index=True)
-    kosdaq_spark = make_sparkline(kosdaq.get("history", []), width=200, height=60, is_index=True)
+    kospi_spark = make_sparkline(kospi.get("history", []), width=200, height=60)
+    kosdaq_spark = make_sparkline(kosdaq.get("history", []), width=200, height=60)
 
     stock_cards = ""
     for name, d in market.items():
@@ -215,36 +228,20 @@ def build_html(market, sectors, themes, analysis, date_label):
             continue
         cp = d.get("change_pct", 0)
         spark = make_sparkline(d.get("history", []), width=80, height=30)
-        stock_cards += f'''<div class="stock-card {cc(cp)}">
-  <div class="stock-name">{name}</div>
-  <div class="stock-price">₩{d.get("price", 0):,.0f}</div>
-  <div class="stock-change {cc(cp)}">{ca(cp)} {abs(cp):.2f}%</div>
-  <div class="spark">{spark}</div>
-</div>'''
+        stock_cards += f'<div class="stock-card {cc(cp)}"><div class="stock-name">{name}</div><div class="stock-price">₩{d.get("price", 0):,.0f}</div><div class="stock-change {cc(cp)}">{ca(cp)} {abs(cp):.2f}%</div><div class="spark">{spark}</div></div>'
 
     sorted_sectors = sorted(sectors.items(), key=lambda x: x[1].get("change_pct", 0), reverse=True)
     sector_cards = ""
     for name, d in sorted_sectors:
         cp = d.get("change_pct", 0)
         bar_width = min(abs(cp) * 8, 100)
-        sector_cards += f'''<div class="sector-row">
-  <div class="sector-name">{name}</div>
-  <div class="sector-bar-wrap">
-    <div class="sector-bar {cc(cp)}" style="width:{bar_width}%"></div>
-  </div>
-  <div class="sector-pct {cc(cp)}">{ca(cp)} {abs(cp):.2f}%</div>
-</div>'''
+        sector_cards += f'<div class="sector-row"><div class="sector-name">{name}</div><div class="sector-bar-wrap"><div class="sector-bar {cc(cp)}" style="width:{bar_width}%"></div></div><div class="sector-pct {cc(cp)}">{ca(cp)} {abs(cp):.2f}%</div></div>'
 
     theme_cards = ""
     for name, d in themes.items():
         cp = d.get("change_pct", 0)
         spark = make_sparkline(d.get("history", []), width=80, height=30)
-        theme_cards += f'''<div class="theme-card {cc(cp)}">
-  <div class="theme-name">{name}</div>
-  <div class="theme-price">₩{d.get("price", 0):,.0f}</div>
-  <div class="theme-change {cc(cp)}">{ca(cp)} {abs(cp):.2f}%</div>
-  <div class="spark">{spark}</div>
-</div>'''
+        theme_cards += f'<div class="theme-card {cc(cp)}"><div class="theme-name">{name}</div><div class="theme-price">₩{d.get("price", 0):,.0f}</div><div class="theme-change {cc(cp)}">{ca(cp)} {abs(cp):.2f}%</div><div class="spark">{spark}</div></div>'
 
     import re
     html_analysis = analysis
@@ -273,9 +270,9 @@ header{{border-bottom:1px solid var(--border);padding:20px 40px;display:flex;jus
 .data-date{{text-align:center;color:var(--accent);font-size:14px;font-weight:700;margin-bottom:28px;padding:12px;background:var(--surface);border-radius:8px;border:1px solid var(--border);}}
 .idx{{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:8px;}}
 .idx-card{{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;justify-content:space-between;align-items:center;}}
-.idx-left .idx-label{{font-size:12px;color:var(--dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}}
-.idx-left .idx-val{{font-family:'JetBrains Mono',monospace;font-size:32px;font-weight:700;margin-bottom:4px;}}
-.idx-left .idx-chg{{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;}}
+.idx-label{{font-size:12px;color:var(--dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}}
+.idx-val{{font-family:'JetBrains Mono',monospace;font-size:32px;font-weight:700;margin-bottom:4px;}}
+.idx-chg{{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;}}
 .up{{color:var(--up);}}.down{{color:var(--down);}}.flat{{color:var(--flat);}}
 .sec{{font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin:28px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--border);}}
 .grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;}}
@@ -288,7 +285,7 @@ header{{border-bottom:1px solid var(--border);padding:20px 40px;display:flex;jus
 .sector-row{{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}}
 .sector-name{{width:60px;font-size:13px;font-weight:700;flex-shrink:0;}}
 .sector-bar-wrap{{flex:1;background:rgba(255,255,255,0.05);border-radius:4px;height:8px;overflow:hidden;}}
-.sector-bar{{height:100%;border-radius:4px;transition:width 0.3s;}}
+.sector-bar{{height:100%;border-radius:4px;}}
 .sector-bar.up{{background:var(--up);}}.sector-bar.down{{background:var(--down);}}
 .sector-pct{{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;width:70px;text-align:right;flex-shrink:0;}}
 .theme-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;}}
@@ -314,7 +311,6 @@ footer{{text-align:center;padding:28px;font-size:12px;color:var(--dim);border-to
 </header>
 <div class="wrap">
 <div class="data-date">📅 {date_label} 기준 데이터</div>
-
 <div class="idx">
 <div class="idx-card">
 <div class="idx-left">
@@ -322,7 +318,7 @@ footer{{text-align:center;padding:28px;font-size:12px;color:var(--dim);border-to
 <div class="idx-val {cc(kp)}">{kospi.get("price", 0):,.2f}</div>
 <div class="idx-chg {cc(kp)}">{ca(kp)} {abs(kp):.2f}%</div>
 </div>
-<div class="idx-right">{kospi_spark}</div>
+<div>{kospi_spark}</div>
 </div>
 <div class="idx-card">
 <div class="idx-left">
@@ -330,20 +326,16 @@ footer{{text-align:center;padding:28px;font-size:12px;color:var(--dim);border-to
 <div class="idx-val {cc(kq)}">{kosdaq.get("price", 0):,.2f}</div>
 <div class="idx-chg {cc(kq)}">{ca(kq)} {abs(kq):.2f}%</div>
 </div>
-<div class="idx-right">{kosdaq_spark}</div>
+<div>{kosdaq_spark}</div>
 </div>
 </div>
-
 <div class="sec">📊 섹터별 등락률</div>
 <div>{sector_cards}</div>
-
 <div class="sec">🎯 테마별 대장주</div>
 <div class="theme-grid">{theme_cards}</div>
-
 <div class="sec">📈 주요 종목</div>
 <div class="grid">{stock_cards}</div>
-
-<div class="sec">🤖 AI 종합 분석 리포트 (초보자용 상세 설명)</div>
+<div class="sec">🤖 AI 심층 분석 리포트</div>
 <div class="report">
 {html_analysis}
 <div class="disc">⚠️ 면책고지: 이 분석은 Claude AI가 생성한 참고 정보입니다. 투자 결정의 최종 책임은 투자자 본인에게 있으며, 본 리포트는 투자 권유가 아닙니다.</div>
