@@ -41,16 +41,19 @@ THEME_TICKERS = {
 def get_last_trading_date():
     kst = datetime.datetime.utcnow() + datetime.timedelta(hours=9)
     weekday = kst.weekday()
-    if weekday == 5:
+
+    if weekday == 5:  # 토요일 -> 금요일
         kst -= datetime.timedelta(days=1)
-    elif weekday == 6:
+    elif weekday == 6:  # 일요일 -> 금요일
         kst -= datetime.timedelta(days=2)
-    else:
+    elif kst.hour < 16:  # 평일 오후 4시 이전 -> 전날
         kst -= datetime.timedelta(days=1)
         if kst.weekday() == 5:
             kst -= datetime.timedelta(days=1)
         elif kst.weekday() == 6:
             kst -= datetime.timedelta(days=2)
+    # 평일 오후 4시 이후 -> 당일
+
     return kst.strftime("%Y%m%d"), kst.strftime("%Y년 %m월 %d일")
 
 def fetch_yahoo(ticker, trading_date):
