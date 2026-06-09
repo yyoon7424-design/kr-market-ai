@@ -360,8 +360,8 @@ footer{{text-align:center;padding:28px;font-size:12px;color:var(--dim);border-to
 def get_all_dates():
     """기존 저장된 날짜 목록 가져오기"""
     dates = []
-    if os.path.exists("docs"):
-        for f in os.listdir("docs"):
+    if os.path.exists("."):
+        for f in os.listdir("."):
             if f.endswith(".html") and f != "index.html" and len(f) == 13:
                 dates.append(f.replace(".html", ""))
     return sorted(dates, reverse=True)
@@ -373,7 +373,7 @@ def main():
     kst_now = datetime.datetime.utcnow() + datetime.timedelta(hours=9)
     updated_str = kst_now.strftime("%Y%m%d %H:%M KST")
 
-    os.makedirs("docs", exist_ok=True)
+    
 
     # 기존 날짜 목록 가져오기
     all_dates = get_all_dates()
@@ -385,14 +385,14 @@ def main():
     html = build_report_html(market, sectors, themes, analysis, date_label, trading_date, updated_str, all_dates)
 
     # 날짜별 파일 저장
-    with open(f"docs/{trading_date}.html", "w", encoding="utf-8") as f:
+    with open(f"{trading_date}.html", "w", encoding="utf-8") as f:
         f.write(html)
-    print(f"✅ docs/{trading_date}.html 저장 완료")
+    print(f"✅ {trading_date}.html 저장 완료")
 
     # 최신 날짜를 index.html 로 복사
-    with open("docs/index.html", "w", encoding="utf-8") as f:
+    with open("index.html", "w", encoding="utf-8") as f:
         f.write(html)
-    print("✅ docs/index.html 업데이트 완료")
+    print("✅ index.html 업데이트 완료")
 
     print("Done!")
 
