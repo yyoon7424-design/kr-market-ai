@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KRMarketAI</title>
+<title>KRMarketAI - 2026년 06월 09일</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0a0e1a;--surface:#111827;--border:#1e2d45;--accent:#00d4ff;--up:#ff4444;--down:#1976d2;--flat:#94a3b8;--text:#e2e8f0;--dim:#64748b;}
@@ -13,6 +13,12 @@ header{border-bottom:1px solid var(--border);padding:20px 40px;display:flex;just
 .logo{font-size:20px;font-weight:900;}.logo span{color:var(--accent);}
 .ts{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--dim);}
 .wrap{max-width:1200px;margin:0 auto;padding:32px 24px;}
+.date-nav{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:24px;}
+.date-nav-title{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:10px;}
+.date-buttons{display:flex;flex-wrap:wrap;gap:6px;}
+.date-btn{padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:12px;font-family:'JetBrains Mono',monospace;cursor:pointer;text-decoration:none;transition:all 0.2s;}
+.date-btn:hover{border-color:var(--accent);color:var(--accent);}
+.date-btn.active{background:var(--accent);color:#000;border-color:var(--accent);font-weight:700;}
 .data-date{text-align:center;color:var(--accent);font-size:14px;font-weight:700;margin-bottom:28px;padding:12px;background:var(--surface);border-radius:8px;border:1px solid var(--border);}
 .idx{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:8px;}
 .idx-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;justify-content:space-between;align-items:center;}
@@ -43,8 +49,7 @@ header{border-bottom:1px solid var(--border);padding:20px 40px;display:flex;just
 .report{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px;line-height:1.9;}
 .report h3{font-size:16px;font-weight:700;color:var(--accent);margin:24px 0 10px;padding:10px 14px;background:rgba(0,212,255,0.05);border-left:3px solid var(--accent);border-radius:0 6px 6px 0;}
 .report li{margin-left:20px;margin-bottom:6px;color:#cbd5e1;}
-.report strong{color:#fff;}
-.report p{margin-bottom:12px;color:#cbd5e1;}
+.report strong{color:#fff;}.report p{margin-bottom:12px;color:#cbd5e1;}
 .disc{margin-top:32px;padding:16px;border-radius:8px;background:rgba(255,68,68,0.06);border:1px solid rgba(255,68,68,0.2);font-size:12px;color:var(--dim);}
 footer{text-align:center;padding:28px;font-size:12px;color:var(--dim);border-top:1px solid var(--border);margin-top:60px;}
 @media(max-width:600px){.idx{grid-template-columns:1fr;}header{padding:14px 16px;}.wrap{padding:20px 14px;}.report{padding:22px;}}
@@ -53,9 +58,13 @@ footer{text-align:center;padding:28px;font-size:12px;color:var(--dim);border-top
 <body>
 <header>
 <div class="logo">KR<span>Market</span>AI</div>
-<div class="ts">updated: 20260609 18:39 KST</div>
+<div class="ts">updated: 20260609 19:10 KST</div>
 </header>
 <div class="wrap">
+<div class="date-nav">
+<div class="date-nav-title">📅 날짜 선택 (최근 30일)</div>
+<div class="date-buttons"><a href="index.html" class="date-btn active">06.09</a></div>
+</div>
 <div class="data-date">📅 2026년 06월 09일 기준 데이터</div>
 <div class="idx">
 <div class="idx-card">
@@ -81,32 +90,10 @@ footer{text-align:center;padding:28px;font-size:12px;color:var(--dim);border-top
 <div class="theme-grid"><div class="theme-card up"><div class="theme-name">AI반도체</div><div class="theme-price">₩2,215,000</div><div class="theme-change up">▲ 15.91%</div><div class="spark"><svg viewBox="0 0 80 30" width="80" height="30" style="overflow:visible"><polyline points="0.0,20.6 8.9,8.0 17.8,4.9 26.7,2.0 35.6,0.0 44.4,0.2 53.3,4.3 62.2,19.4 71.1,30.0 80.0,9.8" fill="none" stroke="#ff4444" stroke-width="2" stroke-linejoin="round"/></svg></div></div><div class="theme-card up"><div class="theme-name">2차전지</div><div class="theme-price">₩396,500</div><div class="theme-change up">▲ 2.06%</div><div class="spark"><svg viewBox="0 0 80 30" width="80" height="30" style="overflow:visible"><polyline points="0.0,23.6 8.9,30.0 17.8,6.4 26.7,0.0 35.6,1.2 44.4,6.2 53.3,14.5 62.2,17.7 71.1,28.0 80.0,24.8" fill="none" stroke="#1976d2" stroke-width="2" stroke-linejoin="round"/></svg></div></div><div class="theme-card up"><div class="theme-name">바이오</div><div class="theme-price">₩170,000</div><div class="theme-change up">▲ 6.65%</div><div class="spark"><svg viewBox="0 0 80 30" width="80" height="30" style="overflow:visible"><polyline points="0.0,0.0 8.9,0.5 17.8,5.4 26.7,2.3 35.6,3.6 44.4,7.7 53.3,10.5 62.2,16.3 71.1,30.0 80.0,17.9" fill="none" stroke="#1976d2" stroke-width="2" stroke-linejoin="round"/></svg></div></div><div class="theme-card up"><div class="theme-name">방산</div><div class="theme-price">₩1,016,000</div><div class="theme-change up">▲ 0.99%</div><div class="spark"><svg viewBox="0 0 80 30" width="80" height="30" style="overflow:visible"><polyline points="0.0,0.0 8.9,0.9 17.8,6.2 26.7,9.6 35.6,13.8 44.4,22.2 53.3,22.4 62.2,24.7 71.1,30.0 80.0,28.8" fill="none" stroke="#1976d2" stroke-width="2" stroke-linejoin="round"/></svg></div></div><div class="theme-card up"><div class="theme-name">로봇</div><div class="theme-price">₩180,900</div><div class="theme-change up">▲ 3.37%</div><div class="spark"><svg viewBox="0 0 80 30" width="80" height="30" style="overflow:visible"><polyline points="0.0,0.0 8.9,5.4 17.8,6.2 26.7,10.4 35.6,0.8 44.4,8.5 53.3,16.4 62.2,17.4 71.1,30.0 80.0,25.5" fill="none" stroke="#1976d2" stroke-width="2" stroke-linejoin="round"/></svg></div></div></div>
 <div class="sec">📈 주요 종목</div>
 <div class="grid"><div class="stock-card up"><div class="stock-name">삼성전자</div><div class="stock-price">₩322,000</div><div class="stock-change up">▲ 8.97%</div><div class="spark"><svg viewBox="0 0 80 30" width="80" height="30" style="overflow:visible"><polyline points="0.0,28.4 8.9,24.7 17.8,28.2 26.7,20.1 35.6,5.3 44.4,0.0 53.3,4.2 62.2,14.5 71.1,30.0 80.0,17.8" fill="none" stroke="#ff4444" stroke-width="2" stroke-linejoin="round"/></svg></div></div><div class="stock-card up"><div class="stock-name">SK하이닉스</div><div class="stock-price">₩2,215,000</div><div class="stock-change up">▲ 15.91%</div><div class="spark"><svg viewBox="0 0 80 30" width="80" height="30" style="overflow:visible"><polyline points="0.0,20.6 8.9,8.0 17.8,4.9 26.7,2.0 35.6,0.0 44.4,0.2 53.3,4.3 62.2,19.4 71.1,30.0 80.0,9.8" fill="none" stroke="#ff4444" stroke-width="2" stroke-linejoin="round"/></svg></div></div><div class="stock-card down"><div class="stock-name">NAVER</div><div class="stock-price">₩257,000</div><div class="stock-change down">▼ 7.89%</div><div class="spark"><svg viewBox="0 0 80 30" width="80" height="30" style="overflow:visible"><polyline points="0.0,29.6 8.9,30.0 17.8,27.7 26.7,17.1 35.6,3.3 44.4,0.0 53.3,4.8 62.2,9.2 71.1,0.6 80.0,8.6" fill="none" stroke="#ff4444" stroke-width="2" stroke-linejoin="round"/></svg></div></div><div class="stock-card up"><div class="stock-name">카카오</div><div class="stock-price">₩39,500</div><div class="stock-change up">▲ 2.33%</div><div class="spark"><svg viewBox="0 0 80 30" width="80" height="30" style="overflow:visible"><polyline points="0.0,9.1 8.9,16.1 17.8,19.0 26.7,5.5 35.6,0.0 44.4,1.1 53.3,5.1 62.2,17.9 71.1,30.0 80.0,23.4" fill="none" stroke="#1976d2" stroke-width="2" stroke-linejoin="round"/></svg></div></div><div class="stock-card up"><div class="stock-name">현대차</div><div class="stock-price">₩639,000</div><div class="stock-change up">▲ 0.00%</div><div class="spark"><svg viewBox="0 0 80 30" width="80" height="30" style="overflow:visible"><polyline points="0.0,16.5 8.9,18.6 17.8,19.7 26.7,7.3 35.6,0.0 44.4,5.7 53.3,13.5 62.2,13.5 71.1,30.0 80.0,30.0" fill="none" stroke="#1976d2" stroke-width="2" stroke-linejoin="round"/></svg></div></div><div class="stock-card up"><div class="stock-name">LG에너지솔루션</div><div class="stock-price">₩396,500</div><div class="stock-change up">▲ 2.06%</div><div class="spark"><svg viewBox="0 0 80 30" width="80" height="30" style="overflow:visible"><polyline points="0.0,23.6 8.9,30.0 17.8,6.4 26.7,0.0 35.6,1.2 44.4,6.2 53.3,14.5 62.2,17.7 71.1,28.0 80.0,24.8" fill="none" stroke="#1976d2" stroke-width="2" stroke-linejoin="round"/></svg></div></div><div class="stock-card up"><div class="stock-name">셀트리온</div><div class="stock-price">₩170,000</div><div class="stock-change up">▲ 6.65%</div><div class="spark"><svg viewBox="0 0 80 30" width="80" height="30" style="overflow:visible"><polyline points="0.0,0.0 8.9,0.5 17.8,5.4 26.7,2.3 35.6,3.6 44.4,7.7 53.3,10.5 62.2,16.3 71.1,30.0 80.0,17.9" fill="none" stroke="#1976d2" stroke-width="2" stroke-linejoin="round"/></svg></div></div><div class="stock-card up"><div class="stock-name">POSCO홀딩스</div><div class="stock-price">₩364,500</div><div class="stock-change up">▲ 1.53%</div><div class="spark"><svg viewBox="0 0 80 30" width="80" height="30" style="overflow:visible"><polyline points="0.0,0.0 8.9,6.7 17.8,8.0 26.7,6.7 35.6,10.5 44.4,15.5 53.3,14.5 62.2,18.8 71.1,30.0 80.0,28.0" fill="none" stroke="#1976d2" stroke-width="2" stroke-linejoin="round"/></svg></div></div><div class="stock-card up"><div class="stock-name">기아</div><div class="stock-price">₩164,300</div><div class="stock-change up">▲ 8.52%</div><div class="spark"><svg viewBox="0 0 80 30" width="80" height="30" style="overflow:visible"><polyline points="0.0,4.7 8.9,8.4 17.8,9.1 26.7,1.1 35.6,0.0 44.4,1.8 53.3,9.1 62.2,14.3 71.1,30.0 80.0,9.1" fill="none" stroke="#1976d2" stroke-width="2" stroke-linejoin="round"/></svg></div></div><div class="stock-card up"><div class="stock-name">KB금융</div><div class="stock-price">₩154,800</div><div class="stock-change up">▲ 2.18%</div><div class="spark"><svg viewBox="0 0 80 30" width="80" height="30" style="overflow:visible"><polyline points="0.0,19.6 8.9,24.4 17.8,30.0 26.7,28.8 35.6,26.7 44.4,20.5 53.3,10.1 62.2,0.0 71.1,27.5 80.0,23.0" fill="none" stroke="#1976d2" stroke-width="2" stroke-linejoin="round"/></svg></div></div></div>
-<div class="sec">🤖 AI 심층 분석 리포트 (실시간 뉴스 기반)</div>
+<div class="sec">🤖 AI 심층 분석 리포트</div>
 <div class="report">
-<p>제공된 데이터와 검색 결과를 바탕으로 15년 경력 한국 주식시장 전문 애널리스트 관점에서 상세한 분석을 제공해드리겠습니다.</p><p><h2>1. 오늘 시장 핵심 요약</h2></p><p>메리츠증권에 따르면 AI 데이터센터 수요 폭증으로 인한 DRAM과 NAND플래시 가격 폭등이 삼성전자와 SK하이닉스의 주가를 크게 끌어올렸으며, 2025년 하반기부터 시작된 이 '슈퍼사이클'이 2026년에도 지속되고 있습니다. 오늘 코스피는 8,096.93으로 8.18% 급등하며 사상 최고치를 경신했고, 특히 반도체 섹터가 상승세를 주도했습니다.</p><p>하지만 깊이 들여다보면, 지난 6월 5일(현지시간) 뉴욕증시를 강타한 '브로드컴 쇼크'가 글로벌 반도체 업계에 경고 신호를 보냈습니다. 이는 단순한 조정이 아니라 AI 반도체 투자 심리의 근본적 변화를 시사합니다.</p><p><strong>1차적 분석 (왜?)</strong>: 오늘 코스피가 8% 급등한 직접적 이유
-<strong>2차적 분석 (그게 왜?)</strong>: 브로드컴이 3분기 AI 반도체 매출 전망을 160억달러로 제시했는데 이는 월가 예상치 172억달러를 밑돌았습니다. 이런 글로벌 AI 투자 둔화 우려에도 불구하고 한국 증시가 급등한 배경에는 "소문에 사고 뉴스에 파는" 심리가 작용했습니다.
-<strong>3차적 분석 (근본 원인은?)</strong>: 투자자들이 삼성전자와 SK하이닉스 합쳐서 연간 700조원에 달하는 영업이익을 낼 것이라는 기대감이 높아진 상황에서, 해외 충격을 오히려 저가 매수 기회로 인식했기 때문입니다.</p><p><h2>2. 섹터별 심층 분석</h2></p><p><h3>반도체 섹터 (+0.90%)</h3>
-<strong>글로벌 트리거</strong>: 브로드컴의 3분기 실적 예상에서 AI 반도체 매출이 160억달러로 시장 컨센서스(172억달러)를 밑돌았다는 발표</p><p><strong>표면적 원인</strong>: 삼성전자 +8.97%, SK하이닉스 +15.91%의 강세
-<strong>심층 원인</strong>: 엔비디아가 SK하이닉스와 AI 팩토리 구축을 위한 첨단 메모리 협력 계획을 발표하면서 HBM 수요 확대 기대가 부각된 점이 해외 부정적 뉴스를 상쇄했습니다.</p><p><strong>시장 심리</strong>: 월가에서는 지난주 반도체주 급락이 AI 투자 사이클 둔화보다는 밸류에이션 부담과 차익실현 성격이 강했다고 평가하고 있어, 국내 투자자들이 이를 저점 매수 기회로 활용한 것입니다.</p><p><strong>근본 구조</strong>: SK하이닉스는 올해 HBM 물량이 완판됐고 2027년까지 공급이 부족할 것으로 전망되며, 글로벌 메모리 3사 모두 보수적 투자 기조를 유지하고 있어 공급 부족 구조가 지속되고 있습니다.</p><p><h3>자동차 섹터 (-5.78%)</h3>
-<strong>글로벌 트리거</strong>: 미국의 예상보다 강한 고용 데이터(5월 172,000개 일자리 추가)로 10년물 국채 수익률이 4.5%를 넘고 30년물 수익률이 5%를 넘어선 것</p><p><strong>표면적 원인</strong>: 높은 금리로 인한 자동차 대출 부담 증가 우려
-<strong>심층 원인</strong>: 자동차는 금리 민감 업종으로 차입 비용 상승이 직접적으로 수요를 위축시킵니다.
-<strong>시장 심리</strong>: 반도체 강세에 자금이 집중되면서 상대적으로 소외된 업종
-<strong>근본 구조</strong>: 전기차 전환기에서 전통 자동차 업체들의 경쟁력 재정립이 필요한 시점</p><p><h3>금융 섹터 (-4.98%)</h3>
-<strong>글로벌 트리거</strong>: 강력한 노동 시장이 연준에게 인플레이션과 싸울 여지를 제공함에 따라 시장이 올해 연준의 금리 인상 가능성을 높인 것</p><p><strong>표면적 원인</strong>: 금리 인상 기대로 순이자마진(NIM) 개선 전망에도 불구하고 하락
-<strong>심층 원인</strong>: 이는 "Good news is bad news" 현상으로, 금리 상승이 경제 둔화를 초래해 대출 수요 감소와 부실률 증가 우려를 키웠습니다.
-<strong>시장 심리</strong>: 반도체 대비 상대적 소외감과 경기 민감주에 대한 회피 심리
-<strong>근본 구조</strong>: 금리 사이클의 정점 근처에서 금융주는 오히려 부담을 받는 구조</p><p><h2>3. 테마별 자금 흐름 분석</h2></p><p><strong>AI 반도체 테마</strong> (+15.91%): 브로드컴이 AI 반도체 매출 장기 목표를 유지한 만큼 AI 데이터센터 투자 확대 흐름은 여전히 유효하다는 판단으로 자금 집중</p><p><strong>2차전지 테마</strong> (+2.06%): 전기차 침체에도 불구하고 ESS(에너지저장시스템) 수요 증가로 방어</p><p><strong>바이오 테마</strong> (+6.65%): 금리인하기에는 바이오 섹터가 수혜를 입는데, 최근 반도체 강세로 주춤하는 상황이었으나 오늘은 반등</p><p><strong>방산 테마</strong> (+0.99%): 이란이 레바논에서의 추가 군사 행동 경고로 이스라엘을 향해 미사일을 발사한 지정학적 위험으로 관심 지속</p><p><h2>4. 리스크 요인 근본 분석</h2></p><p><strong>1차 리스크</strong>: 브로드컴의 AI 반도체 매출 전망치 하향으로 글로벌 AI 투자 둔화 우려
-<strong>2차 리스크</strong>: 엔비디아의 구매 의무 잔액이 1년 새 160억달러에서 950억달러로 6배 증가해 수요가 꺾이는 순간 재고 부담 직결
-<strong>3차 리스크</strong>: 메모리 사이클 끝났다는 얘기가 나오는 순간이 붕괴 직전이라는 역사적 패턴</p><p><strong>근본적 리스크</strong>: 반도체 부문에서 나오는 신호들이 경고 신호로 보이기 시작하고 있으며, 시장의 주도주가 좁아지고 참여하는 종목 수가 줄어드는 양상은 역사적으로 조정 국면의 전조였습니다.</p><p><h2>5. 투자 전략</h2></p><p><strong>단기 전략 (1-3개월)</strong>: 7월 2분기 실적 발표에 대한 기대감이 높으나, 분기 말인 6월에는 매도 압력이 있을 것으로 예상되므로 차익실현 검토</p><p><strong>중기 전략 (3-12개월)</strong>: 2026년 하반기 미국 중간선거 변수와 정책 불확실성으로 큰 조정을 받을 수도 있어 하반기 방어 포지션 구축 필요</p><p><strong>장기 전략</strong>: 신영증권은 2026년 코스피 영업이익이 410조원에 달할 것으로 전망하며, 삼성전자와 SK하이닉스가 전체 이익의 35% 이상을 차지할 것으로 보여 구조적 강세 지속</p><p><h2>6. 추천 종목 3개</h2></p><p><strong>1. 삼성전자 (005930)</strong>
-<li>근거: UBS는 삼성전자가 2026년 매출 446조2000억원, 영업이익 135조3000억원으로 전년 대비 각각 34.7%, 225.2% 증가 전망</li>
-<li>현재가 대비 상승 여력 40% 이상</li></p><p><strong>2. SK하이닉스 (000660)</strong>
-<li>근거: 신한투자증권의 목표가 380만원은 평균 목표가 대비 65.6% 높은 수준으로 긍정적 평가</li>
-<li>HBM 독점적 지위 유지</li></p><p><strong>3. 마벨테크놀로지 ETF 연계 종목</strong>
-<li>근거: 젠슨 황이 마벨을 "다음 1조달러 기업"으로 평가하고 S&P500 편입까지 확정</li>
-<li>관련 국내 반도체 장비/소재 업체 수혜</li></p><p><h2>7. 주의/회피 종목</h2></p><p><strong>회피</strong>: 자동차 관련주 (현대차, 기아 등)
-<li>이유: 강한 고용지표로 인한 금리 상승 압력으로 자동차 대출 수요 위축 우려</li></p><p><strong>주의</strong>: 금융주
-<li>이유: 금리 상승 초기에는 긍정적이나 경기 둔화 우려로 중장기적으로는 부담</li></p><p><h2>8. 초보자를 위한 오늘의 교훈</h2></p><p><strong>교훈 1</strong>: "소문에 사고 뉴스에 파는" 원리를 체험한 날입니다. 브로드컴의 나쁜 뉴스가 나왔지만 이미 시장이 조정을 받은 후라 오히려 반등 기회가 되었습니다.</p><p><strong>교훈 2</strong>: 섹터 로테이션(돌아가며 오르는 현상)을 이해해야 합니다. 반도체가 주도하는 동안 다른 섹터는 소외받지만, 언젠가는 역할이 바뀔 수 있습니다.</p><p><strong>교훈 3</strong>: 글로벌 연동성을 이해해야 합니다. 미국 브로드컴 실적이 한국 반도체 주가에 직접적 영향을 미치는 것처럼, 해외 뉴스를 꾸준히 모니터링해야 합니다.</p><p><strong>교훈 4</strong>: 밸류에이션과 모멘텀의 균형을 맞춰야 합니다. 현재 코스피 PER이 8.5배로 여전히 싸지만, 외국인들의 저항이 상당할 것이라는 점을 고려해야 합니다.</p><p><strong>교훈 5</strong>: 장기 계약의 의미를 이해해야 합니다. 반도체에서 장기 계약하는 경우는 이번이 거의 처음으로, 이는 구조</p>
-<div class="disc">⚠️ 면책고지: 이 분석은 Claude AI가 실시간 뉴스 검색을 통해 생성한 참고 정보입니다. 투자 결정의 최종 책임은 투자자 본인에게 있으며, 본 리포트는 투자 권유가 아닙니다.</div>
+<p>분석 데이터를 불러오는 중 오류가 발생했습니다.</p>
+<div class="disc">⚠️ 면책고지: 이 분석은 Claude AI가 실시간 뉴스 검색을 통해 생성한 참고 정보입니다. 투자 결정의 최종 책임은 투자자 본인에게 있습니다.</div>
 </div>
 </div>
 <footer>KRMarketAI · Powered by Claude AI + 실시간 뉴스 검색 · Data: Yahoo Finance</footer>
