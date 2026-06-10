@@ -20,6 +20,7 @@ jobs:
       - name: 분석 실행
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ALPHA_VANTAGE_API_KEY: ${{ secrets.ALPHA_VANTAGE_API_KEY }}
         run: python analyze.py
       - name: 커밋
         run: |
