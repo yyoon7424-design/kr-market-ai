@@ -1,9 +1,10 @@
 import os, re, datetime, requests
 
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
-ALPHA_VANTAGE_KEY = os.environ.get("ALPHA_VANTAGE_API_KEY", "")
 
-STOCK_TICKERS = {
+TICKERS = {
+    "KOSPI": "069500.KS",
+    "KOSDAQ": "229200.KS",
     "삼성전자": "005930.KS",
     "SK하이닉스": "000660.KS",
     "NAVER": "035420.KS",
@@ -37,39 +38,7 @@ def get_trading_date():
         elif kst.weekday() == 6: kst -= datetime.timedelta(days=2)
     return kst.strftime("%Y%m%d"), kst.strftime("%Y년 %m월 %d일")
 
-def fetch_index_alpha(symbol, tdate):
-    """Alpha Vantage로 KOSPI/KOSDAQ 지수 조회"""
-    try:
-        url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={symbol}&apikey={ALPHA_VANTAGE_KEY}&outputsize=compact"
-        r = requests.get(url, timeout=15)
-        data = r.json()
-        ts = data.get("Time Series (Daily)", {})
-        if not ts:
-            print(f"  Alpha Vantage 오류 {symbol}: {data}")
-            return {"price": 0, "change_pct": 0, "history": []}
-        dates = sorted(ts.keys(), reverse=True)
-        # tdate 이하 가장 최근 날짜 찾기
-        target = next((d for d in dates if d.replace("-","") <= tdate), None)
-        if not target:
-            return {"price": 0, "change_pct": 0, "history": []}
-        t_idx = dates.index(target)
-        cur = float(ts[target]["4. close"])
-        history = []
-        for d in reversed(dates[t_idx:t_idx+10]):
-            history.append([d.replace("-",""), round(float(ts[d]["4. close"]), 2)])
-        if t_idx + 1 < len(dates):
-            prv = float(ts[dates[t_idx+1]]["4. close"])
-            change_pct = round((cur - prv) / prv * 100, 2)
-        else:
-            change_pct = 0
-        print(f"  {symbol}: {target} {cur:,.2f} ({change_pct:+.2f}%)")
-        return {"price": round(cur, 2), "change_pct": change_pct, "history": history}
-    except Exception as e:
-        print(f"  Alpha Vantage 오류 {symbol}: {e}")
-        return {"price": 0, "change_pct": 0, "history": []}
-
 def fetch_yahoo(ticker, tdate):
-    """Yahoo Finance로 개별 종목 조회"""
     try:
         r = requests.get(
             f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?interval=1d&range=20d",
@@ -88,38 +57,26 @@ def fetch_yahoo(ticker, tdate):
             return {"price": cur, "change_pct": round((cur-prv)/prv*100, 2), "history": hist}
         return {"price": 0, "change_pct": 0, "history": []}
     except Exception as e:
-        print(f"  Yahoo 오류 {ticker}: {e}")
+        print(f"  오류 {ticker}: {e}")
         return {"price": 0, "change_pct": 0, "history": []}
 
 def collect(tdate):
     print(f"데이터 수집: {tdate}")
-    m = {}
-    print("  [Alpha Vantage] KOSPI/KOSDAQ 수집...")
-    m["KOSPI"] = fetch_index_alpha("399001.KS", tdate)
-    m["KOSDAQ"] = fetch_index_alpha("229200.KS", tdate)
-    # Alpha Vantage 실패 시 Yahoo 백업
-    if m["KOSPI"]["price"] == 0:
-        print("  Alpha Vantage 실패, Yahoo 백업 사용...")
-        m["KOSPI"] = fetch_yahoo("^KS11", tdate)
-    if m["KOSDAQ"]["price"] == 0:
-        m["KOSDAQ"] = fetch_yahoo("^KQ11", tdate)
-    print("  [Yahoo Finance] 개별 종목 수집...")
-    for k, v in STOCK_TICKERS.items():
-        m[k] = fetch_yahoo(v, tdate)
-        print(f"  {k}: {m[k]['price']:,.0f} ({m[k]['change_pct']:+.2f}%)")
+    m = {k: fetch_yahoo(v, tdate) for k, v in TICKERS.items()}
     s = {k: fetch_yahoo(v, tdate) for k, v in SECTORS.items()}
     t = {k: fetch_yahoo(v, tdate) for k, v in THEMES.items()}
+    for k, v in m.items():
+        print(f"  {k}: {v['price']:,.0f} ({v['change_pct']:+.2f}%)")
     return m, s, t
 
 def analyze(m, s, t, date_label):
     sector_text = ", ".join(f"{k}: {v['change_pct']:+.2f}%" for k, v in s.items())
     theme_text = ", ".join(f"{k}: {v['change_pct']:+.2f}%" for k, v in t.items())
     stock_text = ", ".join(f"{k}: {v['change_pct']:+.2f}%" for k, v in m.items() if k not in ("KOSPI","KOSDAQ"))
-
     prompt = f"""당신은 15년 경력 한국 주식시장 전문 애널리스트입니다.
 
 [원칙]
-- 모든 현상은 왜? → 그게 왜? → 근본원인? 3단계 파고들기
+- 모든 현상은 왜? -> 그게 왜? -> 근본원인? 3단계 파고들기
 - 수치 인용 시 반드시 web_search로 출처 확인 후 명시
 - 확인 안된 수치는 "~추정" 표현 사용
 - 각 섹션 5줄 이상, 초보자 괄호 설명 포함
@@ -130,14 +87,14 @@ def analyze(m, s, t, date_label):
 3. "나스닥 미국증시 {date_label}"
 
 {date_label} 데이터:
-KOSPI {m['KOSPI']['price']:,.2f} ({m['KOSPI']['change_pct']:+.2f}%)
-KOSDAQ {m['KOSDAQ']['price']:,.2f} ({m['KOSDAQ']['change_pct']:+.2f}%)
+KOSPI ETF {m['KOSPI']['price']:,.2f} ({m['KOSPI']['change_pct']:+.2f}%)
+KOSDAQ ETF {m['KOSDAQ']['price']:,.2f} ({m['KOSDAQ']['change_pct']:+.2f}%)
 섹터: {sector_text}
 테마: {theme_text}
 종목: {stock_text}
 
 ### 1. 오늘 시장 핵심 요약 (검색 뉴스 근거)
-### 2. 섹터별 심층 분석 (글로벌 트리거 → 한국 영향 경로 → 시장심리 → 구조적 원인)
+### 2. 섹터별 심층 분석 (글로벌 트리거 -> 한국 영향 경로 -> 시장심리 -> 구조적 원인)
 ### 3. 테마별 자금 흐름
 ### 4. 핵심 리스크 분석
 ### 5. 투자 전략 (단기/중기)
@@ -205,7 +162,7 @@ def build_html(m, s, t, analysis, date_label, tdate, updated, all_dates):
         if name in ("KOSPI","KOSDAQ"): continue
         cp = d.get("change_pct",0)
         sp = sparkline(d.get("history",[]), 80, 28)
-        stocks += f'<div class="scard {cc(cp)}"><div class="sname">{name}</div><div class="sprice">₩{d.get("price",0):,.0f}</div><div class="schg {cc(cp)}">{ca(cp)} {abs(cp):.2f}%</div><div>{sp}</div></div>'
+        stocks += f'<div class="scard {cc(cp)}"><div class="sname">{name}</div><div class="sprice">&#8361;{d.get("price",0):,.0f}</div><div class="schg {cc(cp)}">{ca(cp)} {abs(cp):.2f}%</div><div>{sp}</div></div>'
     sec_rows = ""
     for name, d in sorted(s.items(), key=lambda x: x[1].get("change_pct",0), reverse=True):
         cp = d.get("change_pct",0)
@@ -215,7 +172,7 @@ def build_html(m, s, t, analysis, date_label, tdate, updated, all_dates):
     for name, d in t.items():
         cp = d.get("change_pct",0)
         sp = sparkline(d.get("history",[]), 80, 28)
-        themes_html += f'<div class="scard {cc(cp)}"><div class="sname">{name}</div><div class="sprice">₩{d.get("price",0):,.0f}</div><div class="schg {cc(cp)}">{ca(cp)} {abs(cp):.2f}%</div><div>{sp}</div></div>'
+        themes_html += f'<div class="scard {cc(cp)}"><div class="sname">{name}</div><div class="sprice">&#8361;{d.get("price",0):,.0f}</div><div class="schg {cc(cp)}">{ca(cp)} {abs(cp):.2f}%</div><div>{sp}</div></div>'
     html_a = re.sub(r"### (.+)", r"<h3>\1</h3>", analysis)
     html_a = re.sub(r"## (.+)", r"<h2>\1</h2>", html_a)
     html_a = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", html_a)
@@ -275,21 +232,21 @@ footer{{text-align:center;padding:24px;font-size:11px;color:var(--dm);border-top
 </header>
 <div class="wrap">
 <div class="dnav">
-<div class="dnav-title">📅 날짜 선택 (최근 30일)</div>
+<div class="dnav-title">&#128197; 날짜 선택 (최근 30일)</div>
 <div class="dbtns">{date_btns}</div>
 </div>
-<div class="ddate">📅 {date_label} 기준 데이터</div>
+<div class="ddate">&#128197; {date_label} 기준 데이터</div>
 <div class="idx">
-<div class="icard"><div><div class="ilabel">KOSPI</div><div class="ival {cc(kp)}">{kospi.get("price",0):,.2f}</div><div class="ichg {cc(kp)}">{ca(kp)} {abs(kp):.2f}%</div></div><div>{sparkline(kospi.get("history",[]),180,55)}</div></div>
-<div class="icard"><div><div class="ilabel">KOSDAQ</div><div class="ival {cc(kq)}">{kosdaq.get("price",0):,.2f}</div><div class="ichg {cc(kq)}">{ca(kq)} {abs(kq):.2f}%</div></div><div>{sparkline(kosdaq.get("history",[]),180,55)}</div></div>
+<div class="icard"><div><div class="ilabel">KOSPI (ETF 기준)</div><div class="ival {cc(kp)}">{kospi.get("price",0):,.0f}</div><div class="ichg {cc(kp)}">{ca(kp)} {abs(kp):.2f}%</div></div><div>{sparkline(kospi.get("history",[]),180,55)}</div></div>
+<div class="icard"><div><div class="ilabel">KOSDAQ (ETF 기준)</div><div class="ival {cc(kq)}">{kosdaq.get("price",0):,.0f}</div><div class="ichg {cc(kq)}">{ca(kq)} {abs(kq):.2f}%</div></div><div>{sparkline(kosdaq.get("history",[]),180,55)}</div></div>
 </div>
-<div class="sec">📊 섹터별 등락률</div><div>{sec_rows}</div>
-<div class="sec">🎯 테마별 대장주</div><div class="grid">{themes_html}</div>
-<div class="sec">📈 주요 종목</div><div class="grid">{stocks}</div>
-<div class="sec">🤖 AI 심층 분석 리포트</div>
-<div class="report">{html_a}<div class="disc">⚠️ 면책고지: Claude AI 실시간 뉴스 검색 기반 참고 정보입니다. 투자 결정의 최종 책임은 본인에게 있습니다.</div></div>
+<div class="sec">&#128202; 섹터별 등락률</div><div>{sec_rows}</div>
+<div class="sec">&#127919; 테마별 대장주</div><div class="grid">{themes_html}</div>
+<div class="sec">&#128200; 주요 종목</div><div class="grid">{stocks}</div>
+<div class="sec">&#129776; AI 심층 분석 리포트</div>
+<div class="report">{html_a}<div class="disc">&#9888;&#65039; 면책고지: Claude AI 실시간 뉴스 검색 기반 참고 정보입니다. 투자 결정의 최종 책임은 본인에게 있습니다.</div></div>
 </div>
-<footer>KRMarketAI · Claude AI + 실시간 뉴스 검색 · Data: Alpha Vantage + Yahoo Finance</footer>
+<footer>KRMarketAI · Claude AI + 실시간 뉴스 검색 · Data: Yahoo Finance</footer>
 </body>
 </html>"""
 
